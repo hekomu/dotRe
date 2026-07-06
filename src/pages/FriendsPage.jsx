@@ -17,7 +17,6 @@ export default function FriendsPage() {
   const [requests, setRequests] = useState([])
   const [friends, setFriends] = useState([])
 
-  // 받은 요청 + 친구 목록 새로고침
   const refresh = async () => {
     if (!myId) return
     setRequests(await getReceivedRequests(myId))
@@ -39,18 +38,36 @@ export default function FriendsPage() {
 
   const handleSendRequest = async () => {
     try {
-      await sendFriendRequest(myId, searchResult.id)
-      alert('친구 신청을 보냈습니다.')
-      setSearchResult(null)
-      setEmail('')
+      const result = await sendFriendRequest(myId, searchResult.id)
+      if (result.ok) {
+        alert('친구 신청을 보냈습니다.')
+        setSearchResult(null)
+        setEmail('')
+      } else if (result.reason === 'self') {
+        alert('자기 자신에게는 신청할 수 없습니다.')
+      } else if (result.reason === 'already_friend') {
+        alert('이미 친구입니다.')
+      } else if (result.reason === 'already_pending') {
+        alert('이미 신청을 보냈거나 받은 상태입니다.')
+      }
     } catch (err) {
       alert('신청 오류: ' + err.message)
     }
   }
 
   const handleAccept = async (requestId) => {
-    await acceptFriendRequest(requestId)
-    await refresh()
+    try {
+      const result = await acceptFriendRequest(requestId)
+      console.log('수락 결과:', result)
+      if (!result || result.length === 0) {
+        alert('수락에 실패했습니다. (권한 또는 상태 문제)')
+        return
+      }
+      await refresh()
+    } catch (err) {
+      alert('수락 오류: ' + err.message)
+      console.error(err)
+    }
   }
 
   return (

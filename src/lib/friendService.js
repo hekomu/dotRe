@@ -11,12 +11,38 @@ export async function searchUserByEmail(email) {
   return data
 }
 
-// 2) 친구 신청 보내기
+// 친구 신청 보내기 (중복 확인 포함)
 export async function sendFriendRequest(myId, friendId) {
+  // 자기 자신에게 신청 방지
+  if (myId === friendId) {
+    return { ok: false, reason: 'self' }
+  }
+
+  // 이미 관계가 있는지 양방향으로 확인
+  const { data: existing, error: checkError } = await supabase
+    .from('friends')
+    .select('id, status')
+    .or(
+      `and(user_id.eq.${myId},friend_id.eq.${friendId}),and(user_id.eq.${friendId},friend_id.eq.${myId})`
+    )
+    .maybeSingle()
+  if (checkError) throw checkError
+
+  if (existing) {
+    // 이미 친구이거나, 이미 신청이 오간 상태
+    if (existing.status === 'accepted') {
+      return { ok: false, reason: 'already_friend' }
+    }
+    return { ok: false, reason: 'already_pending' }
+  }
+
+  // 관계가 없으면 새로 신청
   const { error } = await supabase
     .from('friends')
     .insert({ user_id: myId, friend_id: friendId, status: 'pending' })
   if (error) throw error
+
+  return { ok: true }
 }
 
 // 3) 나에게 온 친구 신청 목록 (상대 프로필 포함)
@@ -30,12 +56,13 @@ export async function getReceivedRequests(myId) {
   return data
 }
 
-// 4) 친구 신청 수락
+// 친구 신청 수락 (pending 상태일 때만)
 export async function acceptFriendRequest(requestId) {
   const { error } = await supabase
     .from('friends')
     .update({ status: 'accepted' })
     .eq('id', requestId)
+    .eq('status', 'pending') // 이미 accepted면 아무 일도 안 일어남
   if (error) throw error
 }
 

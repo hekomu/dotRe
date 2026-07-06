@@ -48,6 +48,7 @@ export async function createDiaryWithItem({ userId, content, photoFile }) {
     .insert({
       diary_id: diary.id,
       owner_id: userId,
+      creator_id: userId, //아이템 제작자: 나
       name: itemData.name,
       description: itemData.description,
       image_url: itemData.image_url,
@@ -60,10 +61,12 @@ export async function createDiaryWithItem({ userId, content, photoFile }) {
   
 }
 
+// 내가 만든 아이템 (캘린더용) — 원 제작자가 나이고, 아직 내가 소유한 것
 export async function getMyItems(userId) {
   const { data, error } = await supabase
     .from('items')
     .select('id, name, image_url, description, diaries(diary_date, content, photo_url)')
+    .eq('creator_id', userId)
     .eq('owner_id', userId)
     .order('created_at', { ascending: false })
   if (error) throw error

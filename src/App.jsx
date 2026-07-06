@@ -11,6 +11,7 @@ import DiaryWritePage from './pages/DiaryWritePage'
 import ProfilePage from './pages/ProfilePage'
 import ItemResultPage from './pages/ItemResultPage'
 import SettingsPage from './pages/SettingsPage'
+import ReceivedItemsPage from './pages/ReceivedItemsPage'
 
 export default function App() {
   return (
@@ -30,6 +31,7 @@ export default function App() {
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
           <Route path="/item-result" element={<ProtectedRoute><ItemResultPage /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+          <Route path="/received-items" element={<ProtectedRoute><ReceivedItemsPage /></ProtectedRoute>} />
         </Routes>
         <TabBar />
       </div>
