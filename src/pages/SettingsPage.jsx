@@ -1,12 +1,26 @@
 import { useAuth } from '../lib/AuthContext'
+import { deleteMyAccount } from '../lib/profileService'
 
 export default function SettingsPage() {
-  const { signOut } = useAuth()
+  const { session, signOut } = useAuth()
 
   const handleLogout = async () => {
     if (confirm('로그아웃 하시겠습니까?')) {
       await signOut()
-      // 로그아웃되면 가드(ProtectedRoute)가 자동으로 로그인 페이지로 보냄
+    }
+  }
+
+  const handleDeleteAccount = async () => {
+    const ok = confirm(
+      '정말 회원탈퇴 하시겠습니까?\n작성한 모든 일기와 아이템, 친구 관계가 삭제되며 되돌릴 수 없습니다.'
+    )
+    if (!ok) return
+    try {
+      await deleteMyAccount(session.user.id)
+      alert('회원탈퇴가 완료되었습니다.')
+      await signOut()
+    } catch (err) {
+      alert('탈퇴 처리 중 오류: ' + err.message)
     }
   }
 
@@ -19,6 +33,13 @@ export default function SettingsPage() {
         className="w-full rounded border border-red-300 py-3 text-red-500"
       >
         로그아웃
+      </button>
+
+      <button
+        onClick={handleDeleteAccount}
+        className="w-full rounded bg-red-500 py-3 font-bold text-white"
+      >
+        회원탈퇴
       </button>
     </div>
   )

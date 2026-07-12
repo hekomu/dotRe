@@ -81,7 +81,7 @@ export default function FriendsPage() {
           <input
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            placeholder="친구 이메일 입력"
+            placeholder="친구 닉네임 입력"
             className="flex-1 rounded border p-2"
           />
           <button onClick={handleSearch} className="rounded bg-gray-200 px-4">
@@ -113,7 +113,7 @@ export default function FriendsPage() {
         ) : (
           requests.map((req) => (
             <div key={req.id} className="flex items-center justify-between rounded border p-2">
-              <span>{req.requester?.full_name ?? req.requester?.email}</span>
+              <span>{req.requester?.nickname ?? req.requester?.email}</span>
               <button
                 onClick={() => handleAccept(req.id)}
                 className="rounded bg-blue-400 px-3 py-1 text-sm font-bold text-white"
@@ -133,7 +133,7 @@ export default function FriendsPage() {
         ) : (
           friends.map((f) => (
             <div key={f.relationId} className="rounded border p-2">
-              {f.full_name ?? f.email}
+              {f.nickname ?? f.email}
             </div>
           ))
         )}

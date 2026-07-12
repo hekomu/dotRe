@@ -73,7 +73,7 @@ export default function TradePage() {
                   selectedFriend?.id === f.id ? 'border-green-500 bg-green-100' : ''
                 }`}
               >
-                {f.full_name ?? f.email}
+                {f.nickname ?? f.email}
               </button>
             ))}
           </div>

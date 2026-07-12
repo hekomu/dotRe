@@ -1,11 +1,11 @@
 import { supabase } from './supabaseClient'
 
-// 1) 이메일로 사용자 검색 (친구 찾기)
-export async function searchUserByEmail(email) {
+/// 닉네임으로 사용자 검색 (친구 찾기)
+export async function searchUserByEmail(nickname) {
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, email, full_name')
-    .eq('email', email)
+    .select('id, email, full_name, nickname')
+    .eq('nickname', nickname)
     .maybeSingle()
   if (error) throw error
   return data
@@ -49,7 +49,7 @@ export async function sendFriendRequest(myId, friendId) {
 export async function getReceivedRequests(myId) {
   const { data, error } = await supabase
     .from('friends')
-    .select('id, status, requester:profiles!friends_user_id_fkey(id, email, full_name)')
+    .select('id, status, requester:profiles!friends_user_id_fkey(id, email, full_name, nickname)')
     .eq('friend_id', myId)
     .eq('status', 'pending')
   if (error) throw error
@@ -72,8 +72,8 @@ export async function getMyFriends(myId) {
     .from('friends')
     .select(`
       id, status,
-      user:profiles!friends_user_id_fkey(id, email, full_name),
-      friend:profiles!friends_friend_id_fkey(id, email, full_name)
+      user:profiles!friends_user_id_fkey(id, email, full_name, nickname),
+      friend:profiles!friends_friend_id_fkey(id, email, full_name, nickname)
     `)
     .eq('status', 'accepted')
     .or(`user_id.eq.${myId},friend_id.eq.${myId}`)

@@ -13,7 +13,11 @@ function mockGenerateItem(diaryContent) {
 
 // 사진을 Storage에 올리고 공개 주소를 반환
 async function uploadPhoto(userId, file) {
-  const fileName = `${userId}/${Date.now()}-${file.name}`
+  // 파일 확장자만 추출 (jpg, png 등)
+  const ext = file.name.split('.').pop().toLowerCase()
+  // 한글·공백 걱정 없는 안전한 이름으로 생성
+  const fileName = `${userId}/${Date.now()}.${ext}`
+
   const { error } = await supabase.storage
     .from('diary-photos')
     .upload(fileName, file)
