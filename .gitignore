@@ -11,8 +11,23 @@ node_modules
 dist
 dist-ssr
 *.local
+
+# 환경 변수 (API 키 — 절대 커밋 금지)
 .env
-.env.local
+.env.*
+!.env.example
+server/.env
+
+# Python
+__pycache__/
+*.pyc
+venv/
+.venv/
+
+# 로컬 테스트 산출물
+test_out.png
+kontext_test/out/
+kontext_test/out_*/
 
 # Editor directories and files
 .vscode/*
