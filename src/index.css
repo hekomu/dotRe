@@ -1,1 +1,76 @@
 @import "tailwindcss";
+
+:root {
+  --shell-max: 430px;          /* 아이폰 15 Pro Max 폭 기준 */
+  --tabbar-h: 56px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: system-ui, -apple-system, "Pretendard", sans-serif;
+  background: #e5e5e5;                    /* 데스크톱에서 셸 바깥 여백 */
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;              /* 당겨서 새로고침 방지 */
+}
+
+/* 앱 셸 — 모바일에선 꽉 차고, 데스크톱에선 가운데 정렬 */
+.shell {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: var(--shell-max);
+  height: 100dvh;                          /* vh 아님 — 아래 설명 */
+  margin: 0 auto;
+  background: #fff;
+  overflow: hidden;
+}
+
+/* 본문 — 여기만 스크롤된다 */
+.shell-main {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: calc(var(--safe-top) + 16px) 16px 16px;
+}
+
+/* 하단 탭바 */
+.tabbar {
+  flex: none;
+  height: calc(var(--tabbar-h) + var(--safe-bottom));
+  padding-bottom: var(--safe-bottom);
+  display: flex;
+  align-items: center;
+  border-top: 1px solid #e5e5e5;
+  background: #fff;
+}
+
+.tabbar a {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: 13px;
+  text-decoration: none;
+  color: #888;
+}
+
+.tabbar a.active { color: #22c55e; font-weight: 700; }
+
+/* 터치 대상 최소 44px, 입력창 16px (iOS 자동 확대 방지) */
+button, a[role="button"] { min-height: 44px; }
+input, textarea, select { font-size: 16px; }
+
+/* 도트 스프라이트는 흐려지면 안 된다 */
+.pixel {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
