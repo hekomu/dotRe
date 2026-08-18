@@ -9,7 +9,7 @@ FRINGE_MIN    = 115   # 가장자리에서 이 밝기 이상이면 배경 잔재
 FRINGE_SAT    = 60    # 배경 잔재로 볼 최대 채도
 FRINGE_ITERS  = 4     # 깎아낼 최대 겹 수
 
-SHRINK = 1    # 무조건 깎아낼 겹 수
+SHRINK = 1            # 무조건 깎아낼 겹 수
 
 SOFT_MIN      = 150   # 배경으로 흡수할 최소 밝기 (그림자 포함)
 SOFT_SAT      = 45    # 배경으로 흡수할 최대 채도
