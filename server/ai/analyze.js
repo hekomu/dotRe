@@ -55,12 +55,17 @@ const TOOL = {
       },
       subject_phrase: {
         type: "string",
-        description: "영어 명사구. 관사 포함, 반드시 단수. 예: the slice of strawberry cake"
+        description: "영어 명사구. 관사 포함, 반드시 단수. 이미지 생성 프롬프트에 그대로 들어간다. " +
+          "규칙: 단어 4개 이내. 물체의 종류만 적고 색·재질·상태·감정·판타지 표현을 넣지 말 것. " +
+          "name에 쓴 표현을 절대 재사용하지 말 것. " +
+          "좋은 예: the plush doll, the slice of cake, the sneaker, the ceramic mug, the game console. " +
+          "나쁜 예: the white plush spirit doll with blue eyes, the winter dreamer rabbit doll, the legendary red sneakers."
       },
       distractors: {
         type: "array",
         items: { type: "string" },
-        description: "함께 찍혔지만 제거할 것들의 영어 명사. 예: plate, fork, hand, person, other mugs"
+        description:  "주요 피사체와 함께 찍힌 '다른 물건'들의 영어 명사. 예: plate, fork, hand, table, other mugs. " +
+          "배경·벽·바닥처럼 물건이 아닌 것은 넣지 말 것. 제거할 물건이 없으면 빈 배열."
       },
       has_face: {
         type: "boolean",

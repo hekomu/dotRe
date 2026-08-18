@@ -5,8 +5,8 @@ from scipy import ndimage
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 
-FIXED_GRID    = 64     # 전 아이템 통일. 디테일 부족하면 96
-CANDIDATES    = [32, 40, 48, 56, 64, 72, 80, 96]
+FIXED_GRID    = None     # 전 아이템 통일. 디테일 부족하면
+CANDIDATES    = [56, 60, 64, 72]
 COLORS        = 32
 WARMTH        = 0.0
 PREVIEW       = 8
@@ -17,7 +17,7 @@ HOLE_MIN      = 244
 HOLE_SAT      = 10
 HOLE_MAX_AREA = 0.12
 OPAQUE_MIN    = 0.45   # 블록에서 이 비율 이상 전경이면 칠함
-DETAIL_MIN    = 0.40   # 이 비율만 차지해도 후보로 인정
+DETAIL_MIN    = 0.36   # 이 비율만 차지해도 후보로 인정
 DARK_GAP      = 50     # 다수색보다 이만큼 어두우면 디테일로 판단 45
 
 OUTLINE_STRIP = 2    # 외곽선 탐색 깊이
@@ -97,19 +97,30 @@ def detect_grid(f):
     if FIXED_GRID:
         return FIXED_GRID
     g = f.mean(axis=2)
-    prof = np.abs(np.diff(g, axis=1)).sum(axis=0)
+
+    # 가로·세로 양방향의 경계 강도
+    ex = np.abs(np.diff(g, axis=1)).sum(axis=0)
+    ey = np.abs(np.diff(g, axis=0)).sum(axis=1)
+    prof = ex + ey[:len(ex)]
     prof = prof - prof.mean()
+
     W = g.shape[1]
-    best, best_score = CANDIDATES[0], -1e18
+    scores = []
     for n in CANDIDATES:
-        idx = np.round(np.arange(1, n) * (W / n)).astype(int) - 1
-        idx = idx[(idx >= 0) & (idx < len(prof))]
-        if len(idx) == 0:
+        step = W / n
+        on, off = [], []
+        for i in range(len(prof)):
+            # 격자선 위치에 얼마나 가까운지
+            d = abs(((i + 1) % step) - step / 2)
+            (on if d > step / 2 - 1.2 else off).append(prof[i])
+        if not on or not off:
             continue
-        s = prof[idx].mean()
-        if s > best_score:
-            best, best_score = n, s
-    return best
+        # 격자선 위 강도가 그 외보다 얼마나 높은가
+        scores.append((np.mean(on) - np.mean(off), n))
+
+    if not scores:
+        return CANDIDATES[0]
+    return max(scores)[1]
 
 
 def pixelize(f, bg, n):
@@ -148,7 +159,6 @@ def pixelize(f, bg, n):
     color[alpha == 0] = 0
     return Image.fromarray(
         np.dstack([color, alpha]).astype(np.uint8), "RGBA")
-
 
 def keep_main(img):
     """분리된 조각(그림자·받침) 제거 — 가장 큰 덩어리만 유지"""

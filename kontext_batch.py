@@ -46,7 +46,9 @@ for stem, subject in SUBJECTS.items():
     extra = FACE_CLAUSE if stem in FACE_ITEMS else ""      # ← 추가
     prompt = TEMPLATE.format(s=subject, extra=extra)       # ← 추가
 
+
     with open(path, "rb") as f:
+        
         out = replicate.run(
             "black-forest-labs/flux-kontext-pro",
             input={
