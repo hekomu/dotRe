@@ -39,3 +39,10 @@ kontext_test/out_*/
 *.njsproj
 *.sln
 *.sw?
+
+# 정리용
+server/_test/
+server/__pycache__/
+*.png
+!src/assets/*.png
+!public/**/*.png
