@@ -1,15 +1,7 @@
 import { supabase } from './supabaseClient'
+import { requestItem } from './api'
 
-// 가짜 AI: 일기를 받아 샘플 아이템 정보를 돌려줌
-// 나중에 이 함수 내부만 Replicate API 호출로 교체하면 됨
-function mockGenerateItem(diaryContent) {
-  return {
-    name: '각성의 검은 정수',
-    description:
-      '머나먼 북쪽 대륙의 기획자들이 밤을 지새우며 마셨다고 전해지는 전설적인 정수입니다.',
-    image_url: 'https://placehold.co/300x300/8B4513/ffffff?text=ITEM',
-  }
-}
+
 
 // 사진을 Storage에 올리고 공개 주소를 반환
 async function uploadPhoto(userId, file) {
@@ -27,15 +19,39 @@ async function uploadPhoto(userId, file) {
   return data.publicUrl
 }
 
-// 메인 함수: 일기 저장 → 아이템 생성까지 한 번에 처리
-export async function createDiaryWithItem({ userId, content, photoFile }) {
-  // 1) 사진 업로드 (사진이 있을 때만)
-  let photoUrl = null
-  if (photoFile) {
-    photoUrl = await uploadPhoto(userId, photoFile)
-  }
+/** 연속 작성일 계산 — 오늘부터 거슬러 올라가며 끊기는 지점까지 */
+export async function getStreakDays(userId) {
+  const { data, error } = await supabase
+    .from('diaries')
+    .select('diary_date')
+    .eq('user_id', userId)
+    .order('diary_date', { ascending: false })
+    .limit(60)
+  if (error || !data?.length) return 0
 
-  // 2) 일기 저장
+  const days = [...new Set(data.map((d) => String(d.diary_date).slice(0, 10)))]
+  let streak = 0
+  const cursor = new Date()
+
+  for (const day of days) {
+    const expect = cursor.toISOString().slice(0, 10)
+    if (day !== expect) break
+    streak += 1
+    cursor.setDate(cursor.getDate() - 1)
+  }
+  return streak
+}
+
+/**
+ * 일기 저장 → 서버에 아이템 생성 요청.
+ * 아이템은 pending 상태로만 만들어지고, 실제 생성은 서버가 백그라운드로 진행한다.
+ * 반환된 itemId로 결과 화면에서 Realtime 구독을 건다.
+ */
+export async function createDiaryWithItem({ userId, content, photoFile }) {
+  if (!photoFile) throw new Error('사진을 첨부해주세요')
+
+  const photoUrl = await uploadPhoto(userId, photoFile)
+
   const { data: diary, error: diaryError } = await supabase
     .from('diaries')
     .insert({ user_id: userId, content, photo_url: photoUrl })
@@ -43,26 +59,10 @@ export async function createDiaryWithItem({ userId, content, photoFile }) {
     .single()
   if (diaryError) throw diaryError
 
-  // 3) (가짜 AI) 아이템 생성
-  const itemData = mockGenerateItem(content)
+  const streakDays = await getStreakDays(userId)
+  const { itemId } = await requestItem({ diaryId: diary.id, streakDays })
 
-  // 4) 아이템 저장
-  const { data: item, error: itemError } = await supabase
-    .from('items')
-    .insert({
-      diary_id: diary.id,
-      owner_id: userId,
-      creator_id: userId, //아이템 제작자: 나
-      name: itemData.name,
-      description: itemData.description,
-      image_url: itemData.image_url,
-    })
-    .select()
-    .single()
-  if (itemError) throw itemError
-
-  return { diary, item }
-  
+  return { diary, itemId }
 }
 
 // 내가 만든 아이템 (캘린더용) — 원 제작자가 나이고, 아직 내가 소유한 것

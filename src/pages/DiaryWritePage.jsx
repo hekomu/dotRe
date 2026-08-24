@@ -27,15 +27,18 @@ export default function DiaryWritePage() {
       alert('일기를 입력해주세요.')
       return
     }
+    if (!photoFile) {
+      alert('사진을 첨부해주세요. 사진으로 아이템이 만들어져요!')
+      return
+    }
     setSubmitting(true)
     try {
-      const { item } = await createDiaryWithItem({
+      const { itemId } = await createDiaryWithItem({
         userId: session.user.id,
         content,
         photoFile,
       })
-      // 생성된 아이템 정보를 들고 결과 화면으로 이동
-      navigate('/item-result', { state: { item } })
+      navigate(`/item/${itemId}`, { replace: true })
     } catch (err) {
       alert('저장 중 오류가 발생했습니다: ' + err.message)
       setSubmitting(false)
@@ -75,7 +78,7 @@ export default function DiaryWritePage() {
         disabled={submitting}
         className="rounded bg-green-400 py-3 font-bold disabled:opacity-50"
       >
-        {submitting ? '생성 중...' : '일기 작성 완료!'}
+        {submitting ? '저장 중...' : '리포트 작성 완료!'}
       </button>
     </div>
   )
