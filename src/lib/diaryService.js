@@ -54,7 +54,7 @@ export async function createDiaryWithItem({ userId, content, photoFile }) {
 
   const { data: diary, error: diaryError } = await supabase
     .from('diaries')
-    .insert({ user_id: userId, content, photo_url: photoUrl })
+    .insert({ user_id: userId, content, photo_url: photoUrl, diary_date: new Date().toLocaleDateString('sv-SE')})
     .select()
     .single()
   if (diaryError) throw diaryError
@@ -65,13 +65,26 @@ export async function createDiaryWithItem({ userId, content, photoFile }) {
   return { diary, itemId }
 }
 
-// 내가 만든 아이템 (캘린더용) — 원 제작자가 나이고, 아직 내가 소유한 것
+// 내가 만든 아이템 (캘린더용)
 export async function getMyItems(userId) {
   const { data, error } = await supabase
     .from('items')
-    .select('id, name, image_url, description, diaries(diary_date, content, photo_url)')
+    .select('id, name, image_url, description, rarity, stats, power, meta_status, created_at, diaries(diary_date, content, photo_url)')
     .eq('creator_id', userId)
     .eq('owner_id', userId)
+    .order('created_at', { ascending: false })
+  if (error) throw error
+  return data
+}
+
+/** 교환받은 아이템 (남이 만들어 나에게 보낸 것) */
+export async function getReceivedItems(userId) {
+  const { data, error } = await supabase
+    .from('items')
+    .select('id, name, image_url, description, rarity, stats, power, created_at, creator_id')
+    .eq('owner_id', userId)
+    .neq('creator_id', userId)
+    .eq('meta_status', 'done')
     .order('created_at', { ascending: false })
   if (error) throw error
   return data
