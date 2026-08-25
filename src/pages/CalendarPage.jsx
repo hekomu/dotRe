@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useAuth } from '../lib/AuthContext'
-import { getMyItems, getReceivedItems } from '../lib/diaryService'
+import { getMyItems } from '../lib/diaryService'
+import { getReceivedItems } from '../lib/tradeService'
 import { RARITY_TABLE } from '../game/statSystem'
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']

@@ -1,3 +1,4 @@
+//모달 페이지로 대체...나중에 지울수있음 지우기
 import { useState, useEffect } from 'react'
 import { useAuth } from '../lib/AuthContext'
 import { getReceivedItems } from '../lib/tradeService'

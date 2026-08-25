@@ -77,15 +77,15 @@ export async function getMyItems(userId) {
   return data
 }
 
-/** 교환받은 아이템 (남이 만들어 나에게 보낸 것) */
-export async function getReceivedItems(userId) {
-  const { data, error } = await supabase
-    .from('items')
-    .select('id, name, image_url, description, rarity, stats, power, created_at, creator_id')
-    .eq('owner_id', userId)
-    .neq('creator_id', userId)
-    .eq('meta_status', 'done')
-    .order('created_at', { ascending: false })
-  if (error) throw error
-  return data
-}
+// /** 교환받은 아이템 (남이 만들어 나에게 보낸 것) */
+// export async function getReceivedItems(userId) {
+//   const { data, error } = await supabase
+//     .from('items')
+//     .select('id, name, image_url, description, rarity, stats, power, created_at, creator_id')
+//     .eq('owner_id', userId)
+//     .neq('creator_id', userId)
+//     .eq('meta_status', 'done')
+//     .order('created_at', { ascending: false })
+//   if (error) throw error
+//   return data
+// }

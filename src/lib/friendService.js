@@ -58,12 +58,14 @@ export async function getReceivedRequests(myId) {
 
 // 친구 신청 수락 (pending 상태일 때만)
 export async function acceptFriendRequest(requestId) {
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from('friends')
     .update({ status: 'accepted' })
     .eq('id', requestId)
-    .eq('status', 'pending') // 이미 accepted면 아무 일도 안 일어남
+    .eq('status', 'pending')
+    .select('id')
   if (error) throw error
+  return data
 }
 
 // 5) 내 친구 목록 (수락된 것, 양방향)

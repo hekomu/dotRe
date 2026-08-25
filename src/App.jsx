@@ -11,7 +11,6 @@ import DiaryWritePage from './pages/DiaryWritePage'
 import ProfilePage from './pages/ProfilePage'
 import ItemResultPage from './pages/ItemResultPage'
 import SettingsPage from './pages/SettingsPage'
-import ReceivedItemsPage from './pages/ReceivedItemsPage'
 
 /** 앱 셸 — 세로 플렉스. 본문만 스크롤되고 탭바는 항상 바닥에 */
 function Shell({ withTabBar = true }) {
@@ -61,7 +60,6 @@ export default function App() {
           <Route path="/trade" element={<TradePage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/settings" element={<SettingsPage />} />
-          <Route path="/received-items" element={<ReceivedItemsPage />} />
         </Route>
 
         {/* 탭바 없는 화면 */}
