@@ -5,7 +5,7 @@ const tabs = [
   { to: '/calendar', label: '캘린더' },
   { to: '/', label: '홈' },
   { to: '/friends', label: '친구' },
-  { to: '/raid', label: '레이드' },
+  { to: '/weekly', label: '평가' },
 ]
 
 export default function TabBar() {

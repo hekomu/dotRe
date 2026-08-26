@@ -35,3 +35,14 @@ export function regenerateItem(itemId, streakDays = 0) {
     body: JSON.stringify({ streakDays }),
   })
 }
+
+export function getWeekly() {
+  return request('/api/weekly')
+}
+
+export function claimWeekly(weekStart) {
+  return request('/api/weekly/claim', {
+    method: 'POST',
+    body: JSON.stringify({ weekStart }),
+  })
+}

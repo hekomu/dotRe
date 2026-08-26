@@ -5,7 +5,7 @@ import LoginPage from './pages/LoginPage'
 import HomePage from './pages/HomePage'
 import CalendarPage from './pages/CalendarPage'
 import FriendsPage from './pages/FriendsPage'
-import RaidPage from './pages/RaidPage'
+import WeeklyPage from './pages/WeeklyPage'
 import TradePage from './pages/TradePage'
 import DiaryWritePage from './pages/DiaryWritePage'
 import ProfilePage from './pages/ProfilePage'
@@ -56,7 +56,7 @@ export default function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/calendar" element={<CalendarPage />} />
           <Route path="/friends" element={<FriendsPage />} />
-          <Route path="/raid" element={<RaidPage />} />
+          <Route path="/weekly" element={<WeeklyPage />} />
           <Route path="/trade" element={<TradePage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/settings" element={<SettingsPage />} />
