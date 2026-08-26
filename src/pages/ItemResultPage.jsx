@@ -128,6 +128,9 @@ export default function ItemResultPage() {
             <span className="w-8 text-right text-sm font-bold">{item.stats?.[k] ?? 0}</span>
           </div>
         ))}
+         <p className="mt-2 text-right text-xs text-gray-400">
+          아이템 종합치 {item.power}
+        </p>
       </div>
 
       <div className="mt-2 flex flex-wrap justify-center gap-2">

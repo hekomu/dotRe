@@ -9,6 +9,7 @@ function weekStart() {
 }
 
 // 오늘 그 친구와 이미 교환했는지 확인
+//tradeItem 윗 세 줄 비활성화 해둬서 하루 제한 없는 상태
 async function hasTradedTodayWith(myId, friendId) {
   const since = `${new Date().toLocaleDateString('sv-SE')}T00:00:00`
 

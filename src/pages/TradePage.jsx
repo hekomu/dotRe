@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../lib/AuthContext'
 import { getMyFriends } from '../lib/friendService'
 import { getTradableItems, tradeItem, getReceivedItems } from '../lib/tradeService'
-import { RARITY_TABLE } from '../game/statSystem'
+import { RARITY_TABLE, STAT_KEYS, STAT_LABELS, statPercent } from '../game/statSystem'
 
 export default function TradePage() {
   const { session } = useAuth()
@@ -14,6 +14,7 @@ export default function TradePage() {
   const [selectedFriend, setSelectedFriend] = useState(null)
   const [selectedItem, setSelectedItem] = useState(null)
   const [showBox, setShowBox] = useState(false)
+  const [detail, setDetail] = useState(null)
   const [busy, setBusy] = useState(false)
 
   const refresh = async () => {
@@ -146,12 +147,13 @@ export default function TradePage() {
                 {received.map((it) => {
                   const rarity = RARITY_TABLE[it.rarity] || RARITY_TABLE.normal
                   return (
-                    <div key={it.id} className="flex flex-col items-center">
+                    <button key={it.id} onClick={() => setDetail(it)}
+                            className="flex flex-col items-center">
                       <img src={it.image_url} alt={it.name}
                            className="pixel h-16 w-16 rounded-lg"
                            style={{ backgroundColor: rarity.color + '22' }} />
                       <span className="mt-1 line-clamp-1 text-[11px]">{it.name}</span>
-                    </div>
+                    </button>
                   )
                 })}
               </div>
@@ -159,6 +161,56 @@ export default function TradePage() {
           </div>
         </div>
       )}
+
+      {/* 아이템 상세 */}
+      {detail && (() => {
+        const rarity = RARITY_TABLE[detail.rarity] || RARITY_TABLE.normal
+        return (
+          <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4"
+               onClick={() => setDetail(null)}>
+            <div className="w-full max-w-xs rounded-2xl bg-white p-5"
+                 onClick={(e) => e.stopPropagation()}>
+              <div className="flex flex-col items-center">
+                <img src={detail.image_url} alt={detail.name}
+                     className="pixel h-32 w-32 rounded-xl"
+                     style={{ backgroundColor: rarity.color + '22' }} />
+                <span className="mt-2 rounded-full px-3 py-0.5 text-xs font-bold text-white"
+                      style={{ backgroundColor: rarity.color }}>
+                  {rarity.label}
+                </span>
+                <h4 className="mt-2 text-lg font-bold">{detail.name}</h4>
+                <p className="mt-1 text-center text-sm text-gray-500">{detail.description}</p>
+              </div>
+
+              <div className="mt-4 rounded-xl bg-gray-50 p-3">
+                {STAT_KEYS.map((k) => (
+                  <div key={k} className="mb-2 flex items-center gap-2 last:mb-0">
+                    <span className="w-14 text-xs">
+                      {STAT_LABELS[k].icon} {STAT_LABELS[k].ko}
+                    </span>
+                    <div className="h-2 flex-1 rounded-full bg-gray-200">
+                      <div className="h-2 rounded-full"
+                           style={{ width: `${statPercent(detail.stats?.[k] ?? 0)}%`,
+                                    backgroundColor: STAT_LABELS[k].color }} />
+                    </div>
+                    <span className="w-7 text-right text-xs font-bold">
+                      {detail.stats?.[k] ?? 0}
+                    </span>
+                  </div>
+                ))}
+                <p className="mt-1 text-right text-[11px] text-gray-400">
+                  아이템 종합치 {detail.power}
+                </p>
+              </div>
+
+              <button onClick={() => setDetail(null)}
+                      className="mt-4 w-full rounded-xl bg-gray-200 py-2 font-bold">
+                닫기
+              </button>
+            </div>
+          </div>
+        )
+      })()}
     </div>
   )
 }
