@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../lib/AuthContext'
 import { getMyFriends } from '../lib/friendService'
-import { getTradableItems, tradeItem, getReceivedItems } from '../lib/tradeService'
+import { getTradableItems, tradeItem, getReceivedItems, getBoxSeenAt, markBoxSeen } from '../lib/tradeService'
 import { RARITY_TABLE, STAT_KEYS, STAT_LABELS, statPercent } from '../game/statSystem'
 
 export default function TradePage() {
@@ -16,17 +16,20 @@ export default function TradePage() {
   const [showBox, setShowBox] = useState(false)
   const [detail, setDetail] = useState(null)
   const [busy, setBusy] = useState(false)
+  const [seenAt, setSeenAt] = useState(null) //보관함 표시
 
   const refresh = async () => {
     if (!myId) return
-    const [fr, it, rc] = await Promise.all([
+    const [fr, it, rc, sa] = await Promise.all([
       getMyFriends(myId),
       getTradableItems(myId),
       getReceivedItems(myId),
+      getBoxSeenAt(myId),
     ])
     setFriends(fr)
     setItems(it)
     setReceived(rc)
+    setSeenAt(sa)
   }
 
   useEffect(() => { refresh() }, [myId])
@@ -61,15 +64,25 @@ export default function TradePage() {
 
   const label = (p) => p?.nickname ?? p?.full_name ?? p?.email ?? '알 수 없음'
 
+  const unseen = received.filter(
+    (it) => !seenAt || new Date(it.created_at) > new Date(seenAt)
+  ).length
+
   return (
     <div className="p-4">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-xl font-bold">아이템 교환소</h2>
-        <button onClick={() => setShowBox(true)}
+         <button onClick={async () => {
+                  setShowBox(true)
+                  await markBoxSeen(myId)
+                  setSeenAt(new Date().toISOString())
+                }}
                 className="relative rounded bg-gray-200 px-3 py-1.5 text-sm font-bold">
           보관함
-          {received.length > 0 && (
-            <span className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-red-400" />
+          {unseen > 0 && (
+            <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-400 px-1 text-[10px] text-white">
+              {unseen}
+            </span>
           )}
         </button>
       </div>
@@ -153,6 +166,9 @@ export default function TradePage() {
                            className="pixel h-16 w-16 rounded-lg"
                            style={{ backgroundColor: rarity.color + '22' }} />
                       <span className="mt-1 line-clamp-1 text-[11px]">{it.name}</span>
+                      <span className="line-clamp-1 text-[10px] text-gray-400">
+                        {it.sender?.nickname ?? it.sender?.full_name ?? '?'}
+                      </span>
                     </button>
                   )
                 })}
@@ -181,6 +197,21 @@ export default function TradePage() {
                 <h4 className="mt-2 text-lg font-bold">{detail.name}</h4>
                 <p className="mt-1 text-center text-sm text-gray-500">{detail.description}</p>
               </div>
+
+              {detail.sender && (
+                <div className="mt-3 rounded-xl bg-lime-50 p-3 text-center">
+                  <p className="text-xs text-gray-400">보낸 사람</p>
+                  <p className="font-bold">
+                    {detail.sender.nickname ?? detail.sender.full_name}
+                  </p>
+                  {detail.sender.bio && (
+                    <p className="mt-0.5 text-xs text-gray-500">“{detail.sender.bio}”</p>
+                  )}
+                  <p className="mt-1 text-[11px] text-gray-400">
+                    {String(detail.created_at).slice(0, 10)} 도착
+                  </p>
+                </div>
+              )}
 
               <div className="mt-4 rounded-xl bg-gray-50 p-3">
                 {STAT_KEYS.map((k) => (

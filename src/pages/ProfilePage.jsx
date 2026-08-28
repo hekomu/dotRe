@@ -1,132 +1,161 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/AuthContext'
-import {
-  getMyProfile,
-  isNicknameAvailable,
-  updateNickname,
-} from '../lib/profileService'
+import { getProfileFull, updateProfile, setRepItems } from '../lib/profileService'
+import { getMyItems } from '../lib/diaryService'
+import ProfileCard from '../components/ProfileCard'
+import { RARITY_TABLE } from '../game/statSystem'
 
 export default function ProfilePage() {
   const { session } = useAuth()
   const myId = session?.user.id
+  const navigate = useNavigate()
 
-  const [profile, setProfile] = useState(null)
-  const [diaryCount, setDiaryCount] = useState(0)
-  const [loading, setLoading] = useState(true)
-
+  const [info, setInfo] = useState(null)
   const [editing, setEditing] = useState(false)
-  const [nickInput, setNickInput] = useState('')
-  const [saving, setSaving] = useState(false)
+  const [form, setForm] = useState({ nickname: '', bio: '', birthday: '' })
+  const [slotIndex, setSlotIndex] = useState(null)   // 아이템 고르는 중인 슬롯
+  const [myItems, setMyItems] = useState([])
+  const [busy, setBusy] = useState(false)
 
   const load = () => {
     if (!myId) return
-    getMyProfile(myId)
-      .then(({ profile, diaryCount }) => {
-        setProfile(profile)
-        setDiaryCount(diaryCount)
-        setNickInput(profile?.nickname ?? '')
+    getProfileFull(myId).then((d) => {
+      setInfo(d)
+      setForm({
+        nickname: d.profile.nickname ?? '',
+        bio: d.profile.bio ?? '',
+        birthday: d.profile.birthday ?? '',
       })
-      .catch((err) => console.error('프로필 불러오기 실패:', err))
-      .finally(() => setLoading(false))
+    })
   }
-
   useEffect(load, [myId])
 
-  const handleSaveNickname = async () => {
-    const nick = nickInput.trim()
-    if (!nick) {
-      alert('닉네임을 입력해주세요.')
-      return
+  const openSlot = async (i) => {
+    setSlotIndex(i)
+    if (myItems.length === 0) {
+      const items = await getMyItems(myId)
+      setMyItems(items.filter((it) => it.meta_status === 'done'))
     }
-    setSaving(true)
+  }
+
+  const pickItem = async (item) => {
+    const ids = [...(info.profile.rep_item_ids || [])]
+    while (ids.length < 3) ids.push(null)
+    ids[slotIndex] = item ? item.id : null
+    await setRepItems(myId, ids.filter(Boolean))
+    setSlotIndex(null)
+    load()
+  }
+
+  const handleSave = async () => {
+    setBusy(true)
     try {
-      // 1) 중복 확인
-      const available = await isNicknameAvailable(nick, myId)
-      if (!available) {
+      const r = await updateProfile(myId, {
+        nickname: form.nickname.trim() || null,
+        bio: form.bio.trim() || null,
+        birthday: form.birthday || null,
+      })
+      if (!r.ok && r.reason === 'duplicate') {
         alert('이미 사용 중인 닉네임입니다.')
-        setSaving(false)
         return
       }
-      // 2) 저장
-      const result = await updateNickname(myId, nick)
-      if (!result.ok && result.reason === 'duplicate') {
-        alert('이미 사용 중인 닉네임입니다.')
-        setSaving(false)
-        return
-      }
-      alert('닉네임이 저장되었습니다.')
       setEditing(false)
       load()
     } catch (err) {
-      alert('저장 오류: ' + err.message)
+      alert('저장 실패: ' + err.message)
     } finally {
-      setSaving(false)
+      setBusy(false)
     }
   }
 
-  if (loading) return <div className="p-4">불러오는 중...</div>
-
-  // 표시용 닉네임: 설정했으면 닉네임, 아니면 이메일
-  const displayName = profile?.nickname ?? profile?.email
+  if (!info) return <div className="p-4 text-gray-400">불러오는 중...</div>
 
   return (
-    <div className="flex flex-col items-center gap-4 p-4">
-      <div className="flex h-32 w-32 items-center justify-center rounded-full bg-gray-200">
-        캐릭터
+    <div className="p-4">
+      <div className="mb-4 flex items-center justify-between">
+        <button onClick={() => navigate('/')} className="text-xl text-gray-400">←</button>
+        <span className="rounded-full bg-yellow-100 px-3 py-1 text-sm font-bold">
+          🥜 {info.profile.nuts ?? 0}
+        </span>
       </div>
 
-      <h2 className="text-xl font-bold">{displayName}</h2>
+      <h2 className="mb-3 text-center text-lg font-bold">
+        {info.profile.nickname ?? info.profile.full_name ?? '이름 없음'}
+      </h2>
 
-      <div className="w-full rounded border p-4">
-        {/* 닉네임 행 */}
-        <div className="flex items-center justify-between border-b py-2">
-          <span className="text-gray-500">닉네임</span>
-          {editing ? (
-            <div className="flex gap-2">
-              <input
-                value={nickInput}
-                onChange={(e) => setNickInput(e.target.value)}
-                placeholder="닉네임 입력"
-                className="w-32 rounded border p-1 text-sm"
-              />
-              <button
-                onClick={handleSaveNickname}
-                disabled={saving}
-                className="rounded bg-green-400 px-2 text-sm font-bold disabled:opacity-50"
-              >
-                {saving ? '...' : '저장'}
-              </button>
-              <button
-                onClick={() => setEditing(false)}
-                className="text-sm text-gray-400"
-              >
-                취소
-              </button>
+      {editing ? (
+        <div className="rounded-2xl bg-white p-4 shadow">
+          <label className="mb-1 block text-xs text-gray-500">플레이어 ID (닉네임)</label>
+          <input value={form.nickname}
+                 onChange={(e) => setForm({ ...form, nickname: e.target.value })}
+                 className="mb-3 w-full rounded border p-2" />
+
+          <label className="mb-1 block text-xs text-gray-500">한 줄 소개</label>
+          <input value={form.bio} maxLength={40}
+                 onChange={(e) => setForm({ ...form, bio: e.target.value })}
+                 placeholder="40자 이내"
+                 className="mb-3 w-full rounded border p-2" />
+
+          <label className="mb-1 block text-xs text-gray-500">생일</label>
+          <input type="date" value={form.birthday}
+                 onChange={(e) => setForm({ ...form, birthday: e.target.value })}
+                 className="mb-4 w-full rounded border p-2" />
+
+          <div className="flex gap-2">
+            <button onClick={handleSave} disabled={busy}
+                    className="flex-1 rounded-xl bg-lime-400 py-2 font-bold disabled:opacity-50">
+              저장
+            </button>
+            <button onClick={() => setEditing(false)}
+                    className="flex-1 rounded-xl bg-gray-200 py-2 font-bold">
+              취소
+            </button>
+          </div>
+        </div>
+      ) : (
+        <>
+          <ProfileCard {...info} editable onEditSlot={openSlot} />
+          <button onClick={() => setEditing(true)}
+                  className="mt-3 w-full rounded-xl bg-gray-200 py-2 font-bold">
+            정보 수정
+          </button>
+        </>
+      )}
+
+      {/* 대표 아이템 선택 */}
+      {slotIndex !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+             onClick={() => setSlotIndex(null)}>
+          <div className="max-h-[70vh] w-full max-w-sm overflow-y-auto rounded-2xl bg-white p-4"
+               onClick={(e) => e.stopPropagation()}>
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="font-bold">대표 아이템 선택</h3>
+              <button onClick={() => pickItem(null)}
+                      className="text-xs text-gray-400 underline">비우기</button>
             </div>
-          ) : (
-            <div className="flex items-center gap-2">
-              <span>{profile?.nickname ?? '(미설정)'}</span>
-              <button
-                onClick={() => setEditing(true)}
-                className="text-sm text-blue-500 underline"
-              >
-                변경
-              </button>
-            </div>
-          )}
-        </div>
 
-        {/* 플레이어 ID(=닉네임 또는 이메일) */}
-        <div className="flex justify-between border-b py-2">
-          <span className="text-gray-500">플레이어 ID</span>
-          <span className="text-sm">{displayName}</span>
+            {myItems.length === 0 ? (
+              <p className="py-8 text-center text-sm text-gray-400">아이템이 없어요.</p>
+            ) : (
+              <div className="grid grid-cols-3 gap-2">
+                {myItems.map((it) => {
+                  const rarity = RARITY_TABLE[it.rarity] || RARITY_TABLE.normal
+                  return (
+                    <button key={it.id} onClick={() => pickItem(it)}
+                            className="flex flex-col items-center">
+                      <img src={it.image_url} alt={it.name}
+                           className="pixel h-16 w-16 rounded-lg"
+                           style={{ backgroundColor: rarity.color + '22' }} />
+                      <span className="mt-1 line-clamp-1 text-[11px]">{it.name}</span>
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+          </div>
         </div>
-
-        <div className="flex justify-between py-2">
-          <span className="text-gray-500">일기 작성 횟수</span>
-          <span className="font-bold">{diaryCount}회</span>
-        </div>
-      </div>
+      )}
     </div>
   )
 }

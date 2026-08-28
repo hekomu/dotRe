@@ -172,12 +172,13 @@ async function buildWeek(userId, start, claimedMap) {
 
   const { data: items, error } = await supabaseAdmin
     .from("items")
-    .select("id, category")
+    .select("id, name, category, image_url, rarity")
     .eq("creator_id", userId)
     .eq("owner_id", userId)
     .eq("meta_status", "done")
     .gte("created_at", start.toISOString())
-    .lt("created_at", end.toISOString());
+    .lt("created_at", end.toISOString())
+    .order("created_at", { ascending: true });
   if (error) throw error;
 
   const result = evaluate(items, bonus.key);
@@ -190,9 +191,11 @@ async function buildWeek(userId, start, claimedMap) {
     bonusCategory: bonus.key,
     bonusLabel: bonus.label,
     ...result,
+    items: items.slice(0, 7),
     claimed: !!claimedMap[key],
     claimable: !claimedMap[key] && result.reward > 0 && (!isCurrent || isSunday),
     isCurrent,
+    isSunday,
   };
 }
 

@@ -74,8 +74,8 @@ export async function getMyFriends(myId) {
     .from('friends')
     .select(`
       id, status,
-      user:profiles!friends_user_id_fkey(id, email, full_name, nickname),
-      friend:profiles!friends_friend_id_fkey(id, email, full_name, nickname)
+      user:profiles!friends_user_id_fkey(id, email, full_name, nickname, bio),
+      friend:profiles!friends_friend_id_fkey(id, email, full_name, nickname, bio)
     `)
     .eq('status', 'accepted')
     .or(`user_id.eq.${myId},friend_id.eq.${myId}`)
@@ -86,4 +86,10 @@ export async function getMyFriends(myId) {
     const other = row.user.id === myId ? row.friend : row.user
     return { relationId: row.id, ...other }
   })
+}
+
+/** 친구 삭제 (양방향 관계 한 행 제거) */
+export async function removeFriend(relationId) {
+  const { error } = await supabase.from('friends').delete().eq('id', relationId)
+  if (error) throw error
 }

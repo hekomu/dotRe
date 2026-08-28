@@ -152,6 +152,8 @@ export default function CalendarPage() {
                       {rarity.label}
                     </span>
                     <p className="mt-1 font-bold">{it.name}</p>
+                    <p className="line-clamp-1 text-[10px] text-gray-400">
+                        {it.sender?.nickname ?? it.sender?.full_name ?? '?'}</p>
                     <p className="text-xs text-gray-500">{it.description}</p>
                   </div>
                 </div>

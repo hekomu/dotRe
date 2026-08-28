@@ -6,7 +6,11 @@ import {
   getReceivedRequests,
   acceptFriendRequest,
   getMyFriends,
+  removeFriend
 } from '../lib/friendService'
+
+import { getProfileFull } from '../lib/profileService'
+import ProfileCard from '../components/ProfileCard'
 
 const TABS = [
   ['list', '친구목록'],
@@ -24,6 +28,7 @@ export default function FriendsPage() {
   const [requests, setRequests] = useState([])
   const [friends, setFriends] = useState([])
   const [busy, setBusy] = useState(false)
+  const [viewing, setViewing] = useState(null)  
 
   const refresh = async () => {
     if (!myId) return
@@ -121,11 +126,20 @@ export default function FriendsPage() {
         ) : (
           <div className="flex flex-col gap-2">
             {friends.map((f) => (
-              <div key={f.relationId}
-                   className="flex items-center gap-3 rounded-xl border p-3">
-                <div className="h-10 w-10 rounded-full bg-gray-100" />
-                <span className="font-bold">{label(f)}</span>
-              </div>
+              <button key={f.relationId}
+                onClick={async () => {
+                  const d = await getProfileFull(f.id)
+                  setViewing({ relationId: f.relationId, ...d })
+                }}
+                className="flex items-center gap-3 rounded-xl border p-3 text-left">
+                <div className="h-10 w-10 flex-none rounded-full bg-gray-100" />
+                <div className="min-w-0">
+                  <p className="font-bold">{label(f)}</p>
+                  <p className="line-clamp-1 text-xs text-gray-400">
+                    {f.bio || '한 줄 소개가 없어요'}
+                  </p>
+                </div>
+              </button>
             ))}
           </div>
         )
@@ -184,6 +198,33 @@ export default function FriendsPage() {
             ))}
           </div>
         )
+      )}
+            {viewing && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+             onClick={() => setViewing(null)}>
+          <div className="max-h-[80vh] w-full max-w-sm overflow-y-auto rounded-2xl bg-gray-50 p-4"
+               onClick={(e) => e.stopPropagation()}>
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="font-bold">
+                {viewing.profile.nickname ?? viewing.profile.full_name}
+              </h3>
+              <button onClick={() => setViewing(null)} className="px-2 text-gray-400">✕</button>
+            </div>
+
+            <ProfileCard {...viewing} />
+
+            <button
+              onClick={async () => {
+                if (!confirm('친구를 삭제할까요?')) return
+                await removeFriend(viewing.relationId)
+                setViewing(null)
+                await refresh()
+              }}
+              className="mt-3 w-full rounded-xl bg-red-100 py-2 text-sm font-bold text-red-500">
+              친구 삭제
+            </button>
+          </div>
+        </div>
       )}
     </div>
   )

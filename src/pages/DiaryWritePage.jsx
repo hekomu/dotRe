@@ -47,7 +47,11 @@ export default function DiaryWritePage() {
 
   return (
     <div className="flex flex-col gap-4 p-4">
-      <h2 className="text-xl font-bold">일기 작성</h2>
+      <div className="flex items-center gap-2">
+        <button onClick={() => navigate('/')}
+                className="rounded px-2 py-1 text-xl text-gray-400">←</button>
+        <h2 className="text-xl font-bold">일기 작성</h2>
+      </div>
 
       {/* 사진 선택 영역 */}
       <label className="flex h-48 cursor-pointer items-center justify-center border-2 border-dashed text-gray-400">

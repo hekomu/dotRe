@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import NutsBadge from '../components/NutsBadge'
 
 export default function HomePage() {
   const navigate = useNavigate()
@@ -6,6 +7,7 @@ export default function HomePage() {
     <div className="flex flex-col items-center gap-4 p-4">
       {/* 상단 바: 우측에 설정 버튼 */}
       <div className="flex w-full justify-end">
+        <NutsBadge className="relative flex min-h-full flex-col items-center p-4" />
         <button
           onClick={() => navigate('/settings')}
           aria-label="설정"

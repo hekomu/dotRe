@@ -98,5 +98,33 @@ export async function getReceivedItems(myId) {
     .eq('meta_status', 'done')
     .order('created_at', { ascending: false })
   if (error) throw error
-  return data
+
+  const ids = [...new Set(data.map((d) => d.creator_id).filter(Boolean))]
+  if (ids.length === 0) return data
+
+  const { data: senders } = await supabase
+    .from('profiles')
+    .select('id, nickname, full_name, bio')
+    .in('id', ids)
+
+  const map = Object.fromEntries((senders ?? []).map((s) => [s.id, s]))
+  return data.map((it) => ({ ...it, sender: map[it.creator_id] ?? null }))
+}
+
+//보관함 알림을 위함
+/** 보관함을 마지막으로 연 시각 */
+export async function getBoxSeenAt(myId) {
+  const { data, error } = await supabase
+    .from('profiles').select('box_seen_at').eq('id', myId).single()
+  if (error) throw error
+  return data?.box_seen_at ?? null
+}
+
+/** 보관함을 열었다고 기록 */
+export async function markBoxSeen(myId) {
+  const { error } = await supabase
+    .from('profiles')
+    .update({ box_seen_at: new Date().toISOString() })
+    .eq('id', myId)
+  if (error) throw error
 }
