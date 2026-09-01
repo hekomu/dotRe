@@ -1,8 +1,12 @@
 import { useAuth } from '../lib/AuthContext'
 import { deleteMyAccount } from '../lib/profileService'
+import { useNavigate } from 'react-router-dom'
 
 export default function SettingsPage() {
   const { session, signOut } = useAuth()
+
+  const navigate = useNavigate()
+
 
   const handleLogout = async () => {
     if (confirm('로그아웃 하시겠습니까?')) {
@@ -41,6 +45,10 @@ export default function SettingsPage() {
       >
         회원탈퇴
       </button>
+      <div className="mb-4 flex items-center gap-2">
+        <button onClick={() => navigate(-1)}
+                className="rounded px-2 py-1 text-xl text-gray-400">←</button>
+      </div>
     </div>
   )
 }

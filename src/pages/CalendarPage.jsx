@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { useAuth } from '../lib/AuthContext'
 import { getMyItems } from '../lib/diaryService'
 import { getReceivedItems } from '../lib/tradeService'
-import { RARITY_TABLE } from '../game/statSystem'
+import { RARITY_TABLE, STAT_KEYS, STAT_LABELS, statPercent } from '../game/statSystem'
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
 
@@ -19,6 +19,7 @@ export default function CalendarPage() {
   const [received, setReceived] = useState([])
   const [cursor, setCursor] = useState(() => new Date())
   const [picked, setPicked] = useState(null)      // 선택한 날짜 키
+  const [detail, setDetail] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -134,35 +135,34 @@ export default function CalendarPage() {
       </div>
 
       {/* 선택한 날 상세 */}
-      {pickedItems.length > 0 && (
+            {pickedItems.length > 0 && (
         <div className="mt-4 rounded-xl bg-gray-50 p-4">
           <p className="mb-2 text-sm text-gray-400">{picked}</p>
 
           {pickedItems.map((it) => {
             const rarity = RARITY_TABLE[it.rarity] || RARITY_TABLE.normal
             return (
-              <div key={it.id} className="mb-4 last:mb-0">
-                <div className="flex gap-3">
+              <div key={it.id} className="mb-4 flex gap-3 last:mb-0">
+                <button onClick={() => setDetail(it)} className="flex-none">
                   <img src={it.image_url} alt={it.name}
                        className="pixel h-20 w-20 rounded-lg"
                        style={{ backgroundColor: rarity.color + '22' }} />
-                  <div className="flex-1">
-                    <span className="rounded-full px-2 py-0.5 text-[10px] font-bold text-white"
-                          style={{ backgroundColor: rarity.color }}>
-                      {rarity.label}
-                    </span>
-                    <p className="mt-1 font-bold">{it.name}</p>
-                    <p className="line-clamp-1 text-[10px] text-gray-400">
-                        {it.sender?.nickname ?? it.sender?.full_name ?? '?'}</p>
-                    <p className="text-xs text-gray-500">{it.description}</p>
-                  </div>
-                </div>
+                </button>
 
-                {tab === 'mine' && it.diaries?.content && (
-                  <div className="mt-2 rounded-lg bg-white p-3">
-                    <p className="whitespace-pre-wrap text-sm">{it.diaries.content}</p>
-                  </div>
-                )}
+                <div className="min-w-0 flex-1 rounded-lg bg-white p-3">
+                  {tab === 'mine' ? (
+                    <p className="whitespace-pre-wrap text-sm">
+                      {it.diaries?.content || '작성된 일기가 없어요'}
+                    </p>
+                  ) : (
+                    <>
+                      <p className="text-xs text-gray-400">보낸 사람</p>
+                      <p className="text-sm font-bold">
+                        {it.sender?.nickname ?? it.sender?.full_name ?? '알 수 없음'}
+                      </p>
+                    </>
+                  )}
+                </div>
               </div>
             )
           })}
@@ -176,6 +176,63 @@ export default function CalendarPage() {
             : '아직 받은 아이템이 없어요.'}
         </p>
       )}
+          {detail && (() => {
+        const rarity = RARITY_TABLE[detail.rarity] || RARITY_TABLE.normal
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+               onClick={() => setDetail(null)}>
+            <div className="max-h-[80vh] w-full max-w-xs overflow-y-auto rounded-2xl bg-white p-5"
+                 onClick={(e) => e.stopPropagation()}>
+              <div className="flex flex-col items-center">
+                <img src={detail.image_url} alt={detail.name}
+                     className="pixel h-32 w-32 rounded-xl"
+                     style={{ backgroundColor: rarity.color + '22' }} />
+                <span className="mt-2 rounded-full px-3 py-0.5 text-xs font-bold text-white"
+                      style={{ backgroundColor: rarity.color }}>
+                  {rarity.label}
+                </span>
+                <h4 className="mt-2 text-lg font-bold">{detail.name}</h4>
+                <p className="mt-1 text-center text-sm text-gray-500">{detail.description}</p>
+              </div>
+
+              {detail.sender && (
+                <div className="mt-3 rounded-xl bg-lime-50 p-3 text-center">
+                  <p className="text-xs text-gray-400">보낸 사람</p>
+                  <p className="font-bold">
+                    {detail.sender.nickname ?? detail.sender.full_name}
+                  </p>
+                </div>
+              )}
+
+              <div className="mt-4 rounded-xl bg-gray-50 p-3">
+                {STAT_KEYS.map((k) => (
+                  <div key={k} className="mb-2 flex items-center gap-2 last:mb-0">
+                    <span className="w-14 text-xs">
+                      {STAT_LABELS[k].icon} {STAT_LABELS[k].ko}
+                    </span>
+                    <div className="h-2 flex-1 rounded-full bg-gray-200">
+                      <div className="h-2 rounded-full"
+                           style={{ width: `${statPercent(detail.stats?.[k] ?? 0)}%`,
+                                    backgroundColor: STAT_LABELS[k].color }} />
+                    </div>
+                    <span className="w-7 text-right text-xs font-bold">
+                      {detail.stats?.[k] ?? 0}
+                    </span>
+                  </div>
+                ))}
+                <p className="mt-1 text-right text-[11px] text-gray-400">
+                  아이템 종합치 {detail.power}
+                </p>
+              </div>
+
+              <button onClick={() => setDetail(null)}
+                      className="mt-4 w-full rounded-xl bg-gray-200 py-2 font-bold">
+                닫기
+              </button>
+            </div>
+          </div>
+        )
+      })()}
     </div>
   )
 }
