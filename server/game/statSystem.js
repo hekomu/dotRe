@@ -60,7 +60,10 @@ export const LUCK_JITTER_MULT = 1.6;
 export const VARIANCE = 0.12;
 
 /** 개별 스탯 하한 비율 (총량 대비) */
+
 export const FLOOR_RATIO = 0.08;
+
+export const CAP_MULT = 1.8;
 
 /**
  * 개별 스탯 상한 배율. 상한 = (총량 ÷ 4) × CAP_MULT
@@ -68,7 +71,6 @@ export const FLOOR_RATIO = 0.08;
  *   1.8 → 성향은 살아있되 몰빵은 막힌다 (권장)
  *   2.5+ → 사실상 상한 없음
  */
-export const CAP_MULT = 1.8;
 
 /** 총량으로부터 개별 스탯의 상·하한을 계산 */
 export function statBounds(budget) {

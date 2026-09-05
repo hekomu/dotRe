@@ -34,12 +34,25 @@ export async function generateItem({ itemId, userId, photoUrl,
     const { sprite } = await makeSprite(photo, info, mime);
 
     // 4. Storage 업로드
-    const key = `${userId}/${itemId}.png`;
+    const { data: prev } = await supabaseAdmin
+      .from("items").select("image_url").eq("id", itemId).maybeSingle();
+
+    const key = `${userId}/${itemId}_${Date.now()}.png`;
     const up = await supabaseAdmin.storage.from(BUCKET)
       .upload(key, sprite, { contentType: "image/png", upsert: true });
     if (up.error) throw up.error;
 
     const { data: pub } = supabaseAdmin.storage.from(BUCKET).getPublicUrl(key);
+
+    // 이전 이미지 정리 (실패해도 진행)
+    if (prev?.image_url) {
+      const oldPath = prev.image_url.split(`/${BUCKET}/`)[1];
+      if (oldPath) {
+        await supabaseAdmin.storage.from(BUCKET)
+          .remove([decodeURIComponent(oldPath)])
+          .catch(() => {});
+      }
+    }
 
     // 5. 스탯 (등급은 재사용 — 두 번 굴리면 이름과 스탯이 어긋남)
     const s = generateItemStats({ category: info.category, preRolled: pre });

@@ -105,23 +105,25 @@ app.post("/api/items", requireAuth, async (req, res) => {
 
 /** 다시 생성 — 같은 사진으로 한 번 더 */
 app.post("/api/items/:itemId/regenerate", requireAuth, async (req, res) => {
-  const { itemId } = req.params;
+    const { itemId } = req.params;
 
-  const { data: item } = await supabaseAdmin
+  const { data: item, error: itemErr } = await supabaseAdmin
     .from("items")
-    .select("id, diary_id, owner_id, creator_i, meta_status")
+    .select("id, diary_id, owner_id, creator_id, meta_status")
     .eq("id", itemId)
-    .single();
+    .maybeSingle();
 
-  if (!item) return res.status(404).json({ error: "아이템을 찾을 수 없습니다" });
+  if (itemErr) {
+    console.error("[regenerate] 조회 실패", itemId, itemErr);
+    return res.status(500).json({ error: itemErr.message });
+  }
+  if (!item) {
+    console.error("[regenerate] 아이템 없음", itemId);
+    return res.status(404).json({ error: "아이템을 찾을 수 없습니다" });
+  }
 
   if (item.creator_id !== req.user.id) return res.status(403).json({ error: "권한이 없습니다" });
 
-  if (regen && item.meta_status !== "failed" && !DEV_IDS.has(req.user.id)) {
-    return res.status(429).json({
-      error: "다시 뽑기는 하루에 한 번만 가능해요.",
-    });
-  }
   const { data: regen } = await supabaseAdmin
     .from("items")
     .select("id")
@@ -129,7 +131,7 @@ app.post("/api/items/:itemId/regenerate", requireAuth, async (req, res) => {
     .gte("regenerated_at", todayStart().toISOString())
     .maybeSingle();
 
-  if (regen && !DEV_IDS.has(req.user.id)) {
+  if (regen && item.meta_status !== "failed" && !DEV_IDS.has(req.user.id)) {
     return res.status(429).json({
       error: "다시 뽑기는 하루에 한 번만 가능해요.",
     });

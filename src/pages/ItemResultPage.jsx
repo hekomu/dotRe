@@ -31,11 +31,13 @@ export default function ItemResultPage() {
   }, [itemId])
 
   const handleRetry = async () => {
+    const prev = item
     try {
-      setItem((prev) => ({ ...prev, meta_status: 'pending', error_msg: null }))
+      setItem((p) => ({ ...p, meta_status: 'pending', error_msg: null }))
       await regenerateItem(itemId)
     } catch (err) {
       alert(err.message)
+      setItem(prev)          // 실패하면 원래 상태로 복구
     }
   }
 
