@@ -38,7 +38,7 @@ export async function generateItem({ itemId, userId, photoUrl,
     }
 
     // 3. 스프라이트 생성 (Kontext + 파이썬 후처리)
-    const { sprite } = await makeSprite(photo, info, mime, "_test/last_raw.png"); //수정함아하하하
+    const { sprite } = await makeSprite(photo, info, mime);
 
     // 4. Storage 업로드 — 매번 새 경로로 올려 캐시를 우회한다
     const { data: prev } = await supabaseAdmin
