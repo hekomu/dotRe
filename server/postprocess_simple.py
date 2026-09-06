@@ -11,7 +11,7 @@ FRINGE_ITERS  = 4     # 깎아낼 최대 겹 수
 
 SHRINK = 1            # 무조건 깎아낼 겹 수
 
-SOFT_MIN      = 150   # 배경으로 흡수할 최소 밝기 (그림자 포함)
+SOFT_MIN      = 170   # 배경으로 흡수할 최소 밝기 (그림자 포함)
 SOFT_SAT      = 45    # 배경으로 흡수할 최대 채도
 HOLE_MIN      = 244   # 내부 구멍 판정 밝기 (더 엄격)
 HOLE_SAT      = 10
@@ -40,7 +40,6 @@ def background_mask(f):
     border.discard(0)
     bg = np.isin(lbl, list(border))
 
-    # 손잡이 구멍처럼 안쪽에 갇힌 작고 새하얀 영역도 배경으로
     strict = (mn >= HOLE_MIN) & (sat <= HOLE_SAT)
     for i in range(1, n + 1):
         if i in border:
@@ -127,6 +126,22 @@ if __name__ == "__main__":
             img = img.resize((OUT_SIZE, OUT_SIZE), Image.BOX)
 
         opaque = float((np.array(img)[:, :, 3] > 0).mean())
+
+               # 너무 많이 지워졌으면 보수적인 값으로 다시 처리
+        retried = False
+        if opaque < 0.12:
+            retried = True
+            _min, _sat = SOFT_MIN, SOFT_SAT
+            globals()["SOFT_MIN"], globals()["SOFT_SAT"] = 225, 20
+
+            bg = background_mask(f)
+            alpha = keep_main(np.where(bg, 0, 255).astype(np.uint8))
+            rgb = f.astype(np.uint8).copy()
+            rgb[alpha == 0] = 0
+            img = trim_and_center(Image.fromarray(np.dstack([rgb, alpha]), "RGBA"))
+            opaque = float((np.array(img)[:, :, 3] > 0).mean())
+
+            globals()["SOFT_MIN"], globals()["SOFT_SAT"] = _min, _sat
         if opaque < 0.02:
             print("EMPTY_RESULT", file=sys.stderr)
             sys.exit(3)

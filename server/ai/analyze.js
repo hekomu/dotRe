@@ -42,12 +42,10 @@ const TOOL = {
         description:
           "한국어 2~3문장. 판타지 RPG 도감 말투. 이 물건의 가짜 유래나 전설을 그럴듯하게 지어내되, " +
           "사진 속 실제 물건의 색·형태·특징이 문장 안에 드러나야 한다. " +
-          "약간의 유머나 반전(부작용, 사소한 결함)을 넣으면 좋다."
+          "약간의 유머나 반전(부작용, 사소한 결함)을 넣으면 좋다."+
+          "등급·톤·지시문 같은 메타 정보는 절대 문장에 포함하지 말 것. 물건 이야기만 쓸 것."
       },
-      rarity_tone: {
-        type: "string",
-        description: "아래 사용자 메시지에서 알려준 등급. 이름과 설명의 격을 여기에 맞출 것"
-      },
+      
       category: {
         type: "string",
         enum: CATEGORY_KEYS,
@@ -55,24 +53,30 @@ const TOOL = {
       },
       subject_phrase: {
         type: "string",
-        description: "영어 명사구. 관사 포함, 반드시 단수. 이미지 생성 프롬프트에 그대로 들어간다. " +
+        description:
+          "영어 명사구. 관사 포함, 반드시 단수. 이미지 생성 프롬프트에 그대로 들어간다. " +
           "규칙: 단어 4개 이내. 물체의 종류만 적고 색·재질·상태·감정·판타지 표현을 넣지 말 것. " +
           "name에 쓴 표현을 절대 재사용하지 말 것. " +
           "좋은 예: the plush doll, the slice of cake, the sneaker, the ceramic mug, the game console. " +
-          "나쁜 예: the white plush spirit doll with blue eyes, the winter dreamer rabbit doll, the legendary red sneakers."
+          "나쁜 예: the white plush spirit doll with blue eyes, the legendary red sneakers."
       },
       distractors: {
         type: "array",
         items: { type: "string" },
-        description:  "주요 피사체와 함께 찍힌 '다른 물건'들의 영어 명사. 예: plate, fork, hand, table, other mugs. " +
-          "배경·벽·바닥처럼 물건이 아닌 것은 넣지 말 것. 제거할 물건이 없으면 빈 배열."
+        description:
+          "주요 피사체와 물리적으로 분리된 다른 물건들의 영어 명사. 예: plate, fork, hand, table. " +
+          "피사체에 입혀지거나 붙어 있는 것(옷, 신발, 리본, 모자, 가방, 장식, 부품)은 절대 넣지 말 것. " +
+          "그것들은 피사체의 일부다. 제거할 물건이 없으면 빈 배열."
       },
+
+     
       has_face: {
         type: "boolean",
         description: "물건 자체에 얼굴이나 표정이 그려져 있는가. 인형, 캐릭터 머그컵 등"
       }
     },
-    required: ["found", "reject_reason", "name", "description", "rarity_tone",
+
+    required: ["found", "reject_reason", "name", "description", 
                "category", "subject_phrase", "distractors", "has_face"]
   }
 };

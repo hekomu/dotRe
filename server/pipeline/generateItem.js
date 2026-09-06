@@ -2,6 +2,7 @@ import { analyzePhoto, REJECT_MESSAGE } from "../ai/analyze.js";
 import { makeSprite } from "../ai/kontext.js";
 import { rollRarity, generateItemStats } from "../game/statSystem.js";
 import { supabaseAdmin } from "../lib/supabaseAdmin.js";
+import sharp from "sharp";
 
 const BUCKET = "item-images";
 
@@ -14,11 +15,17 @@ async function fail(itemId, msg) {
 export async function generateItem({ itemId, userId, photoUrl,
                                      textLength = 0, streakDays = 0 }) {
   try {
-    // 1. 원본 사진 로드
+    // 1. 원본 사진 로드 + 정규화
     const res = await fetch(photoUrl);
     if (!res.ok) throw new Error("PHOTO_FETCH_FAILED");
-    const mime = res.headers.get("content-type") || "image/jpeg";
-    const photo = Buffer.from(await res.arrayBuffer());
+
+    const raw = Buffer.from(await res.arrayBuffer());
+    const photo = await sharp(raw)
+      .rotate()                    // EXIF 회전 정보만 반영
+      .resize({ width: 1536, height: 1536, fit: "inside", withoutEnlargement: true })
+      .jpeg({ quality: 92 })
+      .toBuffer();
+    const mime = "image/jpeg";
 
     // 2. 등급 먼저 굴리고, 그 등급을 알려주며 분석 (작명 톤을 맞추기 위함)
     const pre = rollRarity({ textLength, streakDays });
@@ -31,9 +38,9 @@ export async function generateItem({ itemId, userId, photoUrl,
     }
 
     // 3. 스프라이트 생성 (Kontext + 파이썬 후처리)
-    const { sprite } = await makeSprite(photo, info, mime);
+    const { sprite } = await makeSprite(photo, info, mime, "_test/last_raw.png"); //수정함아하하하
 
-    // 4. Storage 업로드
+    // 4. Storage 업로드 — 매번 새 경로로 올려 캐시를 우회한다
     const { data: prev } = await supabaseAdmin
       .from("items").select("image_url").eq("id", itemId).maybeSingle();
 
@@ -48,9 +55,12 @@ export async function generateItem({ itemId, userId, photoUrl,
     if (prev?.image_url) {
       const oldPath = prev.image_url.split(`/${BUCKET}/`)[1];
       if (oldPath) {
-        await supabaseAdmin.storage.from(BUCKET)
-          .remove([decodeURIComponent(oldPath)])
-          .catch(() => {});
+        try {
+          await supabaseAdmin.storage.from(BUCKET)
+            .remove([decodeURIComponent(oldPath)]);
+        } catch {
+          // 삭제 실패는 무시
+        }
       }
     }
 

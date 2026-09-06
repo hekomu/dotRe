@@ -15,15 +15,19 @@ const SCRIPT = process.env.POSTPROCESS_PY;
 
 /** 분석 결과로 Kontext 프롬프트를 조립 */
 export function buildPrompt({ subject_phrase: s, distractors = [], has_face }) {
+  const extra = distractors.length ? `, ${distractors.join(", ")}` : "";
+
   return [
     `Convert ${s} into a single pixel art game item sprite.`,
     `Show only ${s} by itself — remove every other object,`,
-    "including plates, cutlery, hands, tables and duplicate items.",
+    `including plates, cutlery, hands, tables and duplicate items${extra}.`,
+    `Keep all clothing, accessories and attached parts of ${s} exactly as they are.`,
     "Chunky visible pixels, dark outline, flat limited color palette.",
     "Isolated cutout sticker with nothing beneath it, no shadow.",
     "Neutral white balance, pure white background.",
+    "Fit the whole object inside the frame with a small margin on every side.",
     has_face ? "Keep the face expression clear and readable." : "",
-    `Keep ${s} exactly the same object with the same shape, proportions and viewing angle.`
+    `Keep ${s} exactly the same object with the same shape, proportions and viewing angle.`,
   ].filter(Boolean).join(" ");
 }
 
@@ -34,7 +38,6 @@ export async function makeSprite(photoBuffer, info, mimeType = "image/jpeg", kee
   const outPath = path.join(tmpdir(), `dotre_${id}.png`);
 
   try {
-    const dataUrl = `data:${mimeType};base64,${photoBuffer.toString("base64")}`;
     const result = await replicate.run("black-forest-labs/flux-kontext-pro", {
       input: {
         input_image: new Blob([photoBuffer], { type: mimeType }),
