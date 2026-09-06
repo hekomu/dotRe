@@ -77,8 +77,8 @@ export default function ItemResultPage() {
     return (
       <div className="flex flex-col items-center justify-center gap-3 p-8">
         <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-green-500" />
-        <p className="font-bold">아이템을 만들고 있어요</p>
-        <p className="text-sm text-gray-400">20~30초 정도 걸려요</p>
+        <p className="font-bold">픽살락시로 아이템을 보내는 중이에요</p>
+        <p className="text-sm text-gray-400">20초~1분 정도 걸려요</p>
       </div>
     )
   }

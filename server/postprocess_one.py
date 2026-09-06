@@ -25,6 +25,9 @@ OUTLINE_THICK = 1
 OUTLINE_TOL   = 70   # 외곽선으로 볼 밝기 여유
 OUTLINE_SAT   = 40   # 외곽선으로 볼 최대 채도
 
+# ── 확정 설정 (2026-09-06) ────────────────────────────
+# SOFT_MIN 170 / SOFT_SAT 34 / 안전장치 임계 0.12
+# 인형처럼 크림색 몸통을 가진 아이템이 조각나는 문제 대응
 
 def uniform_outline(img, strip=OUTLINE_STRIP, thick=OUTLINE_THICK):
     """가장자리의 '어둡고 무채색인' 픽셀만 외곽선으로 보고 재작성"""
