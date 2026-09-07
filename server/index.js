@@ -6,7 +6,7 @@ import { enqueue } from "./lib/queue.js";
 import { generateItem } from "./pipeline/generateItem.js";
 import { supabaseAdmin } from "./lib/supabaseAdmin.js";
 import { weekStartOf, toKey, getBonusCategory, evaluate } from "./game/weekly.js";
-
+import { priceOf } from "./game/shop.js";
 
 const DEV_IDS = new Set(
   (process.env.DEV_USER_IDS || "").split(",").map((s) => s.trim()).filter(Boolean)
@@ -277,5 +277,90 @@ app.post("/api/weekly/claim", requireAuth, async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3001;
+
+/** 상점 목록 — 내 아이템 + 가격 + 구매 여부 */
+app.get("/api/shop", requireAuth, async (req, res) => {
+  try {
+    const { data: profile } = await supabaseAdmin
+      .from("profiles").select("nuts").eq("id", req.user.id).single();
+
+    const { data: items, error } = await supabaseAdmin
+      .from("items")
+      .select("id, name, image_url, rarity, category, creator_id, created_at")
+      .eq("owner_id", req.user.id)
+      .eq("meta_status", "done")
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+
+    const { data: owned } = await supabaseAdmin
+      .from("room_items").select("item_id").eq("user_id", req.user.id);
+    const ownedSet = new Set((owned || []).map((r) => r.item_id));
+
+    res.json({
+      nuts: profile?.nuts ?? 0,
+      items: items.map((it) => ({
+        ...it,
+        price: priceOf(it.rarity),
+        purchased: ownedSet.has(it.id),
+        fromFriend: it.creator_id !== req.user.id,
+      })),
+    });
+  } catch (err) {
+    console.error("[shop]", err);
+    res.status(500).json({ error: "상점 정보를 불러오지 못했습니다" });
+  }
+});
+
+/** 구매 */
+app.post("/api/shop/buy", requireAuth, async (req, res) => {
+  const { itemId } = req.body;
+  if (!itemId) return res.status(400).json({ error: "itemId가 필요합니다" });
+
+  try {
+    const { data: item } = await supabaseAdmin
+      .from("items")
+      .select("id, rarity, owner_id, meta_status")
+      .eq("id", itemId)
+      .maybeSingle();
+
+    if (!item || item.owner_id !== req.user.id) {
+      return res.status(404).json({ error: "아이템을 찾을 수 없습니다" });
+    }
+    if (item.meta_status !== "done") {
+      return res.status(400).json({ error: "아직 생성 중인 아이템이에요" });
+    }
+
+    const price = priceOf(item.rarity);
+
+    const { data: profile } = await supabaseAdmin
+      .from("profiles").select("nuts").eq("id", req.user.id).single();
+    const nuts = profile?.nuts ?? 0;
+
+    if (nuts < price) {
+      return res.status(400).json({ error: `너트가 부족해요 (${price} 필요)` });
+    }
+
+    // unique 제약이 중복 구매를 막는다
+    const { error: insErr } = await supabaseAdmin.from("room_items").insert({
+      user_id: req.user.id,
+      item_id: itemId,
+      price,
+    });
+    if (insErr) {
+      if (insErr.code === "23505") {
+        return res.status(400).json({ error: "이미 구매한 아이템이에요" });
+      }
+      throw insErr;
+    }
+
+    await supabaseAdmin.from("profiles")
+      .update({ nuts: nuts - price }).eq("id", req.user.id);
+
+    res.json({ ok: true, price, nuts: nuts - price });
+  } catch (err) {
+    console.error("[shop/buy]", err);
+    res.status(500).json({ error: "구매에 실패했습니다" });
+  }
+});
 
 app.listen(PORT, () => console.log(`서버 실행 중 → http://localhost:${PORT}`));

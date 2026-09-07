@@ -11,6 +11,7 @@ import DiaryWritePage from './pages/DiaryWritePage'
 import ProfilePage from './pages/ProfilePage'
 import ItemResultPage from './pages/ItemResultPage'
 import SettingsPage from './pages/SettingsPage'
+import ShopPage from './pages/ShopPage'
 
 /** 앱 셸 — 세로 플렉스. 본문만 스크롤되고 탭바는 항상 바닥에 */
 function Shell({ withTabBar = true }) {
@@ -66,6 +67,7 @@ export default function App() {
         <Route element={<FullLayout />}>
           <Route path="/write" element={<DiaryWritePage />} />
           <Route path="/item/:itemId" element={<ItemResultPage />} />
+          <Route path="/shop" element={<ShopPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -17,6 +17,12 @@ export default function HomePage() {
         </button>
       </div>
 
+
+      <button onClick={() => navigate('/shop')}
+        className="rounded-xl bg-white px-4 py-2 font-bold shadow">
+      상점
+      </button>
+
       {/* 프로필로 가는 캐릭터 자리 */}
       <button
         onClick={() => navigate('/profile')}

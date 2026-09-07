@@ -46,3 +46,14 @@ export function claimWeekly(weekStart) {
     body: JSON.stringify({ weekStart }),
   })
 }
+
+export function getShop() {
+  return request('/api/shop')
+}
+
+export function buyItem(itemId) {
+  return request('/api/shop/buy', {
+    method: 'POST',
+    body: JSON.stringify({ itemId }),
+  })
+}
