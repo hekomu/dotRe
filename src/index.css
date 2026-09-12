@@ -19,6 +19,8 @@ body {
   background: #e5e5e5;                    /* 데스크톱에서 셸 바깥 여백 */
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior: none;              /* 당겨서 새로고침 방지 */
+
+  background-color: #EFEFEF;
 }
 
 /* 앱 셸 — 모바일에선 꽉 차고, 데스크톱에선 가운데 정렬 */
@@ -29,8 +31,15 @@ body {
   max-width: var(--shell-max);
   height: 100dvh;                          /* vh 아님 — 아래 설명 */
   margin: 0 auto;
-  background: #fff;
   overflow: hidden;
+
+
+  background-color: #0D0D1A;
+  background-image: url('/assets/ui/bg-space.png');
+  background-size: 432px auto;      /* 셸 폭에 맞춤 — 도트 배율 고정 */
+  background-position: top center;
+  background-repeat: repeat-y;      /* 세로로 반복 */
+  image-rendering: pixelated;
 }
 
 /* 본문 — 여기만 스크롤된다 */
