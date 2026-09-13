@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/AuthContext'
-import { getProfileFull, updateProfile, setRepItems } from '../lib/profileService'
+import { getProfileFull, updateProfile, setRepItems, deleteMyAccount } from '../lib/profileService'
 import { getMyItems } from '../lib/diaryService'
 import ProfileCard from '../components/ProfileCard'
 import { RARITY_TABLE } from '../game/statSystem'
 
 export default function ProfilePage() {
-  const { session } = useAuth()
+  const { session, signOut } = useAuth()
   const myId = session?.user.id
   const navigate = useNavigate()
 
@@ -69,6 +69,28 @@ export default function ProfilePage() {
     }
   }
 
+  // 로그아웃 처리
+  const handleLogout = async () => {
+    if (confirm('로그아웃 하시겠습니까?')) {
+      await signOut()
+    }
+  }
+
+  // 회원탈퇴 처리
+  const handleDeleteAccount = async () => {
+    const ok = confirm(
+      '정말 회원탈퇴 하시겠습니까?\n작성한 모든 일기와 아이템, 친구 관계가 삭제되며 되돌릴 수 없습니다.'
+    )
+    if (!ok) return
+    try {
+      await deleteMyAccount(myId)
+      alert('회원탈퇴가 완료되었습니다.')
+      await signOut()
+    } catch (err) {
+      alert('탈퇴 처리 중 오류: ' + err.message)
+    }
+  }
+
   if (!info) return <div className="p-4 text-gray-400">불러오는 중...</div>
 
   return (
@@ -123,7 +145,24 @@ export default function ProfilePage() {
         </>
       )}
 
-      {/* 대표 아이템 선택 */}
+      {/* 통합된 계정 설정 (로그아웃 / 회원탈퇴) */}
+      <div className="mt-8 flex flex-col gap-2 border-t pt-4">
+        <p className="text-xs font-bold text-gray-400">계정 관리</p>
+        <button
+          onClick={handleLogout}
+          className="w-full rounded-xl border border-red-300 py-2.5 text-sm text-red-500 font-bold"
+        >
+          로그아웃
+        </button>
+        <button
+          onClick={handleDeleteAccount}
+          className="w-full rounded-xl bg-red-500 py-2.5 text-sm font-bold text-white"
+        >
+          회원탈퇴
+        </button>
+      </div>
+
+      {/* 대표 아이템 선택 모달 */}
       {slotIndex !== null && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
              onClick={() => setSlotIndex(null)}>

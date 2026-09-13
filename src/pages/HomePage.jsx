@@ -1,48 +1,62 @@
+import { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import NutsBadge from '../components/NutsBadge'
 import MyRoom from '../components/MyRoom'
+import HomeHeader from '../components/HomeHeader'
 
 export default function HomePage() {
   const navigate = useNavigate()
+  const [hasWrittenToday, setHasWrittenToday] = useState(false)
+
+  const handleStatusLoaded = useCallback((isWritten) => {
+    setHasWrittenToday(isWritten)
+  }, [])
 
   return (
     <div className="flex flex-col gap-4 p-4">
-      {/* 상단 바 */}
-      <div className="flex items-center justify-end gap-2">
+      {/* 1. 상단 바: 좌측 너트 배지 & 우측 날짜/연속작성 컴포넌트 */}
+      <div className="flex items-center justify-between">
         <NutsBadge />
-        <button onClick={() => navigate('/settings')} aria-label="설정"
-                className="rounded-full p-2 text-2xl">
-          ⚙️
-        </button>
+        <HomeHeader onStatusLoaded={handleStatusLoaded} />
       </div>
 
-      {/* 프로필 카드 */}
+      {/* 2. 프로필 카드 */}
       <button onClick={() => navigate('/profile')}
-              className="flex items-center gap-3 rounded-2xl border p-3 text-left">
-        <div className="flex h-16 w-16 flex-none items-center justify-center rounded-full bg-gray-200 text-xs">
-          내 캐릭터
+              className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-3 text-left">
+        <div className="flex h-14 w-14 flex-none items-center justify-center rounded-full bg-gray-700 text-xl border border-white/20">
+          👤
         </div>
-        <span className="text-sm text-gray-400">프로필 설정</span>
+        <div className="flex flex-col">
+          <span className="text-sm font-bold text-white">프로필 설정</span>
+        </div>
       </button>
 
-      {/* 방 */}
+      {/* 3. 방 (MyRoom) */}
       <div className="relative w-full">
-        <MyRoom className="rounded-2xl bg-gray-100" />
+        <MyRoom className="rounded-2xl bg-gray-900 border border-white/10" />
         <button onClick={() => navigate('/room')} aria-label="방 꾸미기"
-                className="absolute right-2 top-2 z-50 rounded-full bg-white/80 p-2 shadow">
+                className="absolute right-2 top-2 z-50 rounded-full bg-black/60 p-2 shadow backdrop-blur-md">
           ✏️
         </button>
       </div>
 
-      {/* 하단 버튼 */}
-      <div className="flex items-center justify-between">
+      {/* 4. 하단 버튼 */}
+      <div className="flex items-center justify-between gap-3 mt-2">
         <button onClick={() => navigate('/shop')}
-                className="rounded-xl bg-white px-5 py-3 font-bold shadow">
+                className="rounded-xl bg-white/10 border border-white/20 px-5 py-3 font-bold text-white shadow">
           상점
         </button>
-        <button onClick={() => navigate('/write')}
-                className="rounded-xl bg-green-400 px-6 py-3 font-bold">
-          일기 작성
+
+        <button 
+          onClick={() => navigate('/write')}
+          disabled={hasWrittenToday}
+          className={`rounded-xl px-6 py-3 font-bold transition-all ${
+            hasWrittenToday 
+              ? 'bg-gray-600 text-gray-400 cursor-not-allowed' 
+              : 'bg-green-400 text-black shadow-lg'
+          }`}
+        >
+          {hasWrittenToday ? '오늘 일기 작성 완료' : '일기 작성'}
         </button>
       </div>
     </div>
