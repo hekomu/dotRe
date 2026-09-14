@@ -40,19 +40,24 @@ export default function HomePage() {
         </button>
       </div>
 
-      {/* 4. 하단 버튼 (일기 작성 제한 해제) */}
+      {/* 4. 하단 버튼 */}
       <div className="flex items-center justify-between gap-3 mt-2">
         <button onClick={() => navigate('/shop')}
                 className="rounded-xl bg-white/10 border border-white/20 px-5 py-3 font-bold text-white shadow">
           상점
         </button>
 
-        {/* 오늘 작성 여부와 관계없이 항상 클릭 가능한 원래 버튼 */}
-        <button 
+        <button
           onClick={() => navigate('/write')}
-          className="rounded-xl bg-green-400 px-6 py-3 font-bold text-black shadow-lg hover:scale-105 active:scale-95 transition-transform"
+          disabled={hasWrittenToday}
+          aria-label={hasWrittenToday ? '오늘 일기 작성 완료' : '일기 작성'}
         >
-          일기 작성
+          <img
+            src={hasWrittenToday ? 'public/assets/ui/WriteButton_dis.png' : 'public/assets/ui/WriteButton.png'}
+            alt={hasWrittenToday ? '오늘 일기 작성 완료' : '일기 작성'}
+            className="h-auto w-auto select-none"
+            draggable={false}
+          />
         </button>
       </div>
     </div>

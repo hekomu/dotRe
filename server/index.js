@@ -40,6 +40,23 @@ async function madeItemToday(userId) {
   return data.length > 0;
 }
 
+
+// server/index.js
+
+async function wroteDiaryToday(userId) {
+  if (DEV_IDS.has(userId)) return false;
+
+  const { data, error } = await supabaseAdmin
+    .from("diaries")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("diary_date", todayStr()) // 'YYYY-MM-DD' — 프론트와 동일한 기준으로
+    .limit(1);
+  if (error) throw error;
+  return data.length > 0;
+}
+
+
 const app = express();
 app.use(cors({ origin: process.env.CORS_ORIGIN || "http://localhost:5173" }));
 app.use(express.json());
