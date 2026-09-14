@@ -7,6 +7,8 @@ import { generateItem } from "./pipeline/generateItem.js";
 import { supabaseAdmin } from "./lib/supabaseAdmin.js";
 import { weekStartOf, toKey, getBonusCategory, evaluate } from "./game/weekly.js";
 import { priceOf } from "./game/shop.js";
+import { FURNITURE_CATEGORY_KEYS, FURNITURE_CATEGORY_LABELS } from "./game/furniture.js";
+import { AVATAR_CATEGORY_KEYS, AVATAR_CATEGORY_LABELS } from "./game/avatar.js";
 
 const DEV_IDS = new Set(
   (process.env.DEV_USER_IDS || "").split(",").map((s) => s.trim()).filter(Boolean)
@@ -294,14 +296,16 @@ app.get("/api/shop", requireAuth, async (req, res) => {
 
     const { data: owned } = await supabaseAdmin
       .from("room_items").select("item_id").eq("user_id", req.user.id);
-    const ownedSet = new Set((owned || []).map((r) => r.item_id));
+    const ownedCounts = {};
+    for (const r of owned || []) ownedCounts[r.item_id] = (ownedCounts[r.item_id] || 0) + 1;
 
     res.json({
       nuts: profile?.nuts ?? 0,
       items: items.map((it) => ({
         ...it,
         price: priceOf(it.rarity),
-        purchased: ownedSet.has(it.id),
+        ownedCount: ownedCounts[it.id] || 0,
+        maxedOut: (ownedCounts[it.id] || 0) >= 5,
         fromFriend: it.creator_id !== req.user.id,
       })),
     });
@@ -311,10 +315,15 @@ app.get("/api/shop", requireAuth, async (req, res) => {
   }
 });
 
-/** 구매 */
+/** 구매 — 아이템은 수량 선택 가능(최대 5개), 이미 보유한 개수와 합쳐서 5개를 넘을 수 없음 */
 app.post("/api/shop/buy", requireAuth, async (req, res) => {
-  const { itemId } = req.body;
+  const { itemId, qty = 1 } = req.body;
   if (!itemId) return res.status(400).json({ error: "itemId가 필요합니다" });
+
+  const quantity = Number(qty);
+  if (!Number.isInteger(quantity) || quantity < 1 || quantity > 5) {
+    return res.status(400).json({ error: "구매 개수는 1~5개 사이여야 해요" });
+  }
 
   try {
     const { data: item } = await supabaseAdmin
@@ -330,36 +339,227 @@ app.post("/api/shop/buy", requireAuth, async (req, res) => {
       return res.status(400).json({ error: "아직 생성 중인 아이템이에요" });
     }
 
-    const price = priceOf(item.rarity);
+    const { count: ownedCount, error: countErr } = await supabaseAdmin
+      .from("room_items")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", req.user.id)
+      .eq("item_id", itemId);
+    if (countErr) throw countErr;
+
+    if ((ownedCount ?? 0) + quantity > 5) {
+      return res.status(400).json({
+        error: `이 아이템은 최대 5개까지 보유할 수 있어요 (현재 ${ownedCount ?? 0}개 보유 중)`,
+      });
+    }
+
+    const unitPrice = priceOf(item.rarity);
+    const totalPrice = unitPrice * quantity;
 
     const { data: profile } = await supabaseAdmin
       .from("profiles").select("nuts").eq("id", req.user.id).single();
     const nuts = profile?.nuts ?? 0;
 
-    if (nuts < price) {
-      return res.status(400).json({ error: `너트가 부족해요 (${price} 필요)` });
+    if (nuts < totalPrice) {
+      return res.status(400).json({ error: `너트가 부족해요 (${totalPrice} 필요)` });
     }
 
-    // unique 제약이 중복 구매를 막는다
-    const { error: insErr } = await supabaseAdmin.from("room_items").insert({
+    const rows = Array.from({ length: quantity }, () => ({
       user_id: req.user.id,
       item_id: itemId,
-      price,
+      price: unitPrice,
+    }));
+
+    const { error: insErr } = await supabaseAdmin.from("room_items").insert(rows);
+    if (insErr) throw insErr;
+
+    await supabaseAdmin.from("profiles")
+      .update({ nuts: nuts - totalPrice }).eq("id", req.user.id);
+
+    res.json({ ok: true, qty: quantity, unitPrice, totalPrice, nuts: nuts - totalPrice });
+  } catch (err) {
+    console.error("[shop/buy]", err);
+    res.status(500).json({ error: "구매에 실패했습니다" });
+  }
+});
+
+/** 가구 목록 — 카테고리와 함께 반환 */
+app.get("/api/furniture", requireAuth, async (req, res) => {
+  try {
+    const { data: profile } = await supabaseAdmin
+      .from("profiles").select("nuts").eq("id", req.user.id).single();
+
+    const { data: catalog, error } = await supabaseAdmin
+      .from("furniture_catalog")
+      .select("id, category, name, image_url, price")
+      .order("category", { ascending: true });
+    if (error) throw error;
+
+    const { data: owned } = await supabaseAdmin
+      .from("room_furniture").select("furniture_id").eq("user_id", req.user.id);
+    const ownedSet = new Set((owned || []).map((r) => r.furniture_id));
+
+    res.json({
+      nuts: profile?.nuts ?? 0,
+      categories: FURNITURE_CATEGORY_KEYS.map((key) => ({
+        key, label: FURNITURE_CATEGORY_LABELS[key],
+      })),
+      items: catalog.map((f) => ({ ...f, owned: ownedSet.has(f.id) })),
+    });
+  } catch (err) {
+    console.error("[furniture]", err);
+    res.status(500).json({ error: "가구 목록을 불러오지 못했습니다" });
+  }
+});
+
+/** 가구 구매 — 종류당 1개 제한 */
+app.post("/api/furniture/buy", requireAuth, async (req, res) => {
+  const { furnitureId } = req.body;
+  if (!furnitureId) return res.status(400).json({ error: "furnitureId가 필요합니다" });
+
+  try {
+    const { data: furniture } = await supabaseAdmin
+      .from("furniture_catalog")
+      .select("id, price")
+      .eq("id", furnitureId)
+      .maybeSingle();
+    if (!furniture) return res.status(404).json({ error: "가구를 찾을 수 없습니다" });
+
+    const { data: profile } = await supabaseAdmin
+      .from("profiles").select("nuts").eq("id", req.user.id).single();
+    const nuts = profile?.nuts ?? 0;
+
+    if (nuts < furniture.price) {
+      return res.status(400).json({ error: `너트가 부족해요 (${furniture.price} 필요)` });
+    }
+
+    const { error: insErr } = await supabaseAdmin.from("room_furniture").insert({
+      user_id: req.user.id,
+      furniture_id: furnitureId,
+      price: furniture.price,
     });
     if (insErr) {
       if (insErr.code === "23505") {
-        return res.status(400).json({ error: "이미 구매한 아이템이에요" });
+        return res.status(400).json({ error: "이미 보유한 가구예요" });
       }
       throw insErr;
     }
 
     await supabaseAdmin.from("profiles")
-      .update({ nuts: nuts - price }).eq("id", req.user.id);
+      .update({ nuts: nuts - furniture.price }).eq("id", req.user.id);
 
-    res.json({ ok: true, price, nuts: nuts - price });
+    res.json({ ok: true, nuts: nuts - furniture.price });
   } catch (err) {
-    console.error("[shop/buy]", err);
+    console.error("[furniture/buy]", err);
     res.status(500).json({ error: "구매에 실패했습니다" });
+  }
+});
+
+const EQUIP_COLUMN = { face: "equipped_face_id", hair: "equipped_hair_id", outfit: "equipped_outfit_id" };
+
+/** 아바타 파츠 카탈로그 + 보유 여부 + 장착 상태 */
+app.get("/api/avatar", requireAuth, async (req, res) => {
+  try {
+    const { data: profile } = await supabaseAdmin
+      .from("profiles")
+      .select("nuts, equipped_face_id, equipped_hair_id, equipped_outfit_id")
+      .eq("id", req.user.id).single();
+
+    const { data: catalog, error } = await supabaseAdmin
+      .from("avatar_parts")
+      .select("id, category, name, image_url, price, is_default")
+      .order("category", { ascending: true });
+    if (error) throw error;
+
+    const { data: owned } = await supabaseAdmin
+      .from("user_avatar_parts").select("part_id").eq("user_id", req.user.id);
+    const ownedSet = new Set((owned || []).map((r) => r.part_id));
+
+    const equipped = {
+      face: profile?.equipped_face_id ?? null,
+      hair: profile?.equipped_hair_id ?? null,
+      outfit: profile?.equipped_outfit_id ?? null,
+    };
+
+    res.json({
+      nuts: profile?.nuts ?? 0,
+      categories: AVATAR_CATEGORY_KEYS.map((key) => ({ key, label: AVATAR_CATEGORY_LABELS[key] })),
+      equipped,
+      items: catalog.map((p) => ({ ...p, owned: p.is_default || ownedSet.has(p.id) })),
+    });
+  } catch (err) {
+    console.error("[avatar]", err);
+    res.status(500).json({ error: "커스터마이징 정보를 불러오지 못했습니다" });
+  }
+});
+
+/** 파츠 구매 (기본 제공 파츠는 구매 불필요) */
+app.post("/api/avatar/buy", requireAuth, async (req, res) => {
+  const { partId } = req.body;
+  if (!partId) return res.status(400).json({ error: "partId가 필요합니다" });
+
+  try {
+    const { data: part } = await supabaseAdmin
+      .from("avatar_parts").select("id, price, is_default").eq("id", partId).maybeSingle();
+    if (!part) return res.status(404).json({ error: "파츠를 찾을 수 없습니다" });
+    if (part.is_default) return res.status(400).json({ error: "이미 기본으로 보유한 파츠예요" });
+
+    const { data: profile } = await supabaseAdmin
+      .from("profiles").select("nuts").eq("id", req.user.id).single();
+    const nuts = profile?.nuts ?? 0;
+
+    if (nuts < part.price) {
+      return res.status(400).json({ error: `너트가 부족해요 (${part.price} 필요)` });
+    }
+
+    const { error: insErr } = await supabaseAdmin.from("user_avatar_parts").insert({
+      user_id: req.user.id,
+      part_id: partId,
+    });
+    if (insErr) {
+      if (insErr.code === "23505") {
+        return res.status(400).json({ error: "이미 보유한 파츠예요" });
+      }
+      throw insErr;
+    }
+
+    await supabaseAdmin.from("profiles")
+      .update({ nuts: nuts - part.price }).eq("id", req.user.id);
+
+    res.json({ ok: true, nuts: nuts - part.price });
+  } catch (err) {
+    console.error("[avatar/buy]", err);
+    res.status(500).json({ error: "구매에 실패했습니다" });
+  }
+});
+
+/** 파츠 장착 — 보유(또는 기본 제공)한 파츠만 장착 가능. partId가 null이면 해제 */
+app.post("/api/avatar/equip", requireAuth, async (req, res) => {
+  const { category, partId } = req.body;
+  const column = EQUIP_COLUMN[category];
+  if (!column) return res.status(400).json({ error: "잘못된 카테고리입니다" });
+
+  try {
+    if (partId) {
+      const { data: part } = await supabaseAdmin
+        .from("avatar_parts").select("id, category, is_default").eq("id", partId).maybeSingle();
+      if (!part || part.category !== category) {
+        return res.status(400).json({ error: "잘못된 파츠입니다" });
+      }
+      if (!part.is_default) {
+        const { data: owned } = await supabaseAdmin
+          .from("user_avatar_parts")
+          .select("id").eq("user_id", req.user.id).eq("part_id", partId).maybeSingle();
+        if (!owned) return res.status(403).json({ error: "보유하지 않은 파츠예요" });
+      }
+    }
+
+    await supabaseAdmin.from("profiles")
+      .update({ [column]: partId ?? null }).eq("id", req.user.id);
+
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("[avatar/equip]", err);
+    res.status(500).json({ error: "장착에 실패했습니다" });
   }
 });
 

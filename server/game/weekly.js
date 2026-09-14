@@ -13,7 +13,7 @@ export const GRADE_TABLE = [
 /** 보너스 카테고리 순환 순서 — 배열을 섞어두면 덜 규칙적으로 보인다 */
 const BONUS_CYCLE = [
   "food", "tech", "toy", "plant", "fashion", "stationery",
-  "drink", "tool", "accessory", "animal", "misc",
+  "drink", "tool", "accessory", "animal"
 ];
 
 const DAY = 24 * 60 * 60 * 1000;

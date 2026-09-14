@@ -137,6 +137,15 @@ export default function ProfilePage() {
         </div>
       ) : (
         <>
+          <div className="relative mb-4 flex h-40 items-center justify-center rounded-2xl bg-gray-100">
+            <span className="text-xs text-gray-400">아바타 영역 (에셋 준비 중)</span>
+            <button onClick={() => navigate('/customize')}
+                    aria-label="커스터마이징"
+                    className="absolute right-2 top-2 flex h-9 w-9 items-center justify-center rounded-full bg-white text-lg shadow">
+              🧑
+            </button>
+         </div>
+          
           <ProfileCard {...info} editable onEditSlot={openSlot} />
           <button onClick={() => setEditing(true)}
                   className="mt-3 w-full rounded-xl bg-gray-200 py-2 font-bold">

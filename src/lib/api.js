@@ -51,9 +51,38 @@ export function getShop() {
   return request('/api/shop')
 }
 
-export function buyItem(itemId) {
+export function buyItem(itemId, qty = 1) {
   return request('/api/shop/buy', {
     method: 'POST',
-    body: JSON.stringify({ itemId }),
+    body: JSON.stringify({ itemId, qty }),
+  })
+}
+
+export function getFurniture(){
+  return request('/api/furniture')
+}
+
+export function buyFurniture(furnitureId) {
+  return request('/api/furniture/buy', {
+    method: 'POST',
+    body: JSON.stringify({ furnitureId }),
+  })
+}
+
+export function getAvatar() {
+  return request('/api/avatar')
+}
+
+export function buyAvatarPart(partId) {
+  return request('/api/avatar/buy', {
+    method: 'POST',
+    body: JSON.stringify({ partId }),
+  })
+}
+
+export function equipAvatarPart(category, partId) {
+  return request('/api/avatar/equip', {
+    method: 'POST',
+    body: JSON.stringify({ category, partId }),
   })
 }

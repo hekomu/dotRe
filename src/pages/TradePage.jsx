@@ -1,7 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../lib/AuthContext'
 import { getMyFriends } from '../lib/friendService'
-import { getTradableItems, tradeItem, getReceivedItems, getBoxSeenAt, markBoxSeen } from '../lib/tradeService'
+import {
+  getTradableItems, tradeItem,
+  getPendingTrades, receiveTrade, discardTrade,
+  getReceivedItems, getPendingTradeCount,
+} from '../lib/tradeService'
 import { RARITY_TABLE, STAT_KEYS, STAT_LABELS, statPercent } from '../game/statSystem'
 
 export default function TradePage() {
@@ -10,29 +14,79 @@ export default function TradePage() {
 
   const [friends, setFriends] = useState([])
   const [items, setItems] = useState([])
-  const [received, setReceived] = useState([])
   const [selectedFriend, setSelectedFriend] = useState(null)
   const [selectedItem, setSelectedItem] = useState(null)
+  const [pendingCount, setPendingCount] = useState(0)
+
   const [showBox, setShowBox] = useState(false)
+  const [boxTab, setBoxTab] = useState('pending')   // pending | received
+  const [pending, setPending] = useState([])
+  const [received, setReceived] = useState([])
+  const [boxLoading, setBoxLoading] = useState(false)
+  const [decidingId, setDecidingId] = useState(null)
+
   const [detail, setDetail] = useState(null)
   const [busy, setBusy] = useState(false)
-  const [seenAt, setSeenAt] = useState(null) //보관함 표시
 
   const refresh = async () => {
     if (!myId) return
-    const [fr, it, rc, sa] = await Promise.all([
+    const [fr, it, pc] = await Promise.all([
       getMyFriends(myId),
       getTradableItems(myId),
-      getReceivedItems(myId),
-      getBoxSeenAt(myId),
+      getPendingTradeCount(myId),
     ])
     setFriends(fr)
     setItems(it)
-    setReceived(rc)
-    setSeenAt(sa)
+    setPendingCount(pc)
   }
 
   useEffect(() => { refresh() }, [myId])
+
+  const openBox = async () => {
+    setShowBox(true)
+    setBoxLoading(true)
+    try {
+      const [pd, rc] = await Promise.all([
+        getPendingTrades(myId),
+        getReceivedItems(myId),
+      ])
+      setPending(pd)
+      setReceived(rc)
+    } catch (err) {
+      alert('보관함을 불러오지 못했습니다: ' + err.message)
+    } finally {
+      setBoxLoading(false)
+    }
+  }
+
+  const handleReceive = async (tradeId) => {
+    setDecidingId(tradeId)
+    try {
+      const r = await receiveTrade(tradeId)
+      if (!r.ok) alert('이미 처리된 아이템이에요.')
+      setPending((p) => p.filter((t) => t.tradeId !== tradeId))
+      setReceived(await getReceivedItems(myId))
+      setPendingCount((c) => Math.max(0, c - 1))
+    } catch (err) {
+      alert('수령 오류: ' + err.message)
+    } finally {
+      setDecidingId(null)
+    }
+  }
+
+  const handleDiscard = async (tradeId) => {
+    if (!confirm('이 아이템을 받지 않고 버릴까요?')) return
+    setDecidingId(tradeId)
+    try {
+      await discardTrade(tradeId)
+      setPending((p) => p.filter((t) => t.tradeId !== tradeId))
+      setPendingCount((c) => Math.max(0, c - 1))
+    } catch (err) {
+      alert('폐기 오류: ' + err.message)
+    } finally {
+      setDecidingId(null)
+    }
+  }
 
   const handleTrade = async () => {
     if (!selectedFriend || !selectedItem) return
@@ -44,7 +98,6 @@ export default function TradePage() {
         myItemId: selectedItem.id,
       })
       const messages = {
-        already_today: '이 친구와는 오늘 이미 교환했어요. 내일 다시 시도해주세요.',
         not_owner: '교환할 수 없는 아이템입니다.',
         not_ready: '아직 생성 중인 아이템이에요.',
       }
@@ -64,30 +117,21 @@ export default function TradePage() {
 
   const label = (p) => p?.nickname ?? p?.full_name ?? p?.email ?? '알 수 없음'
 
-  const unseen = received.filter(
-    (it) => !seenAt || new Date(it.created_at) > new Date(seenAt)
-  ).length
-
   return (
     <div className="p-4">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-xl font-bold">아이템 교환소</h2>
-         <button onClick={async () => {
-                  setShowBox(true)
-                  await markBoxSeen(myId)
-                  setSeenAt(new Date().toISOString())
-                }}
+        <button onClick={openBox}
                 className="relative rounded bg-gray-200 px-3 py-1.5 text-sm font-bold">
           보관함
-          {unseen > 0 && (
+          {pendingCount > 0 && (
             <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-400 px-1 text-[10px] text-white">
-              {unseen}
+              {pendingCount}
             </span>
           )}
         </button>
       </div>
 
-      {/* 1. 친구 선택 */}
       <section className="mb-5">
         <h3 className="mb-2 text-sm font-bold text-gray-500">1. 보낼 친구</h3>
         {friends.length === 0 ? (
@@ -97,9 +141,7 @@ export default function TradePage() {
             {friends.map((f) => (
               <button key={f.id} onClick={() => setSelectedFriend(f)}
                 className={`rounded-full border px-3 py-1.5 text-sm ${
-                  selectedFriend?.id === f.id
-                    ? 'border-green-500 bg-green-100 font-bold'
-                    : ''
+                  selectedFriend?.id === f.id ? 'border-green-500 bg-green-100 font-bold' : ''
                 }`}>
                 {label(f)}
               </button>
@@ -108,13 +150,10 @@ export default function TradePage() {
         )}
       </section>
 
-      {/* 2. 아이템 선택 */}
       <section className="mb-5">
-        <h3 className="mb-2 text-sm font-bold text-gray-500">
-          2. 보낼 아이템 <span className="font-normal"></span>
-        </h3>
+        <h3 className="mb-2 text-sm font-bold text-gray-500">2. 보낼 아이템</h3>
         {items.length === 0 ? (
-          <p className="text-sm text-gray-400">이번 주에 만든 아이템이 없어요.</p>
+          <p className="text-sm text-gray-400">아직 만든 아이템이 없어요.</p>
         ) : (
           <div className="grid grid-cols-3 gap-2">
             {items.map((it) => {
@@ -140,45 +179,95 @@ export default function TradePage() {
         {busy ? '보내는 중...' : '전송!'}
       </button>
 
-      {/* 보관함 모달 */}
       {showBox && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
              onClick={() => setShowBox(false)}>
-          <div className="max-h-[70vh] w-full max-w-sm overflow-y-auto rounded-2xl bg-white p-4"
+          <div className="max-h-[80vh] w-full max-w-sm overflow-y-auto rounded-2xl bg-white p-4"
                onClick={(e) => e.stopPropagation()}>
             <div className="mb-3 flex items-center justify-between">
               <h3 className="font-bold">보관함</h3>
               <button onClick={() => setShowBox(false)} className="px-2 text-gray-400">✕</button>
             </div>
 
-            {received.length === 0 ? (
-              <p className="py-8 text-center text-sm text-gray-400">
-                아직 받은 아이템이 없어요.
-              </p>
+            <div className="mb-3 flex gap-2">
+              {[['pending', `받은 아이템${pending.length ? ` (${pending.length})` : ''}`], ['received', '수령 기록']].map(([key, name]) => (
+                <button key={key} onClick={() => setBoxTab(key)}
+                  className={`rounded-full px-3 py-1 text-sm ${
+                    boxTab === key ? 'bg-lime-400 font-bold' : 'bg-gray-100 text-gray-500'
+                  }`}>
+                  {name}
+                </button>
+              ))}
+            </div>
+
+            {boxLoading ? (
+              <p className="py-8 text-center text-sm text-gray-400">불러오는 중...</p>
+            ) : boxTab === 'pending' ? (
+              pending.length === 0 ? (
+                <p className="py-8 text-center text-sm text-gray-400">새로 도착한 아이템이 없어요.</p>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  {pending.map((t) => {
+                    const it = t.item
+                    const rarity = it ? (RARITY_TABLE[it.rarity] || RARITY_TABLE.normal) : RARITY_TABLE.normal
+                    const deciding = decidingId === t.tradeId
+                    return (
+                      <div key={t.tradeId} className="flex items-center gap-3 rounded-xl border p-2">
+                        {it ? (
+                          <img src={it.image_url} alt={it.name}
+                               className="pixel h-14 w-14 flex-none rounded-lg"
+                               style={{ backgroundColor: rarity.color + '22' }} />
+                        ) : (
+                          <div className="h-14 w-14 flex-none rounded-lg bg-gray-100" />
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <p className="line-clamp-1 text-sm font-bold">{it?.name ?? '알 수 없는 아이템'}</p>
+                          <p className="line-clamp-1 text-xs text-gray-400">
+                            {t.sender?.nickname ?? t.sender?.full_name ?? '알 수 없음'} 님이 보냄
+                          </p>
+                        </div>
+                        <div className="flex flex-none flex-col gap-1">
+                          <button onClick={() => handleReceive(t.tradeId)} disabled={deciding}
+                                  className="rounded bg-lime-400 px-2 py-1 text-xs font-bold disabled:opacity-50">
+                            수령
+                          </button>
+                          <button onClick={() => handleDiscard(t.tradeId)} disabled={deciding}
+                                  className="rounded bg-gray-100 px-2 py-1 text-xs text-gray-500 disabled:opacity-50">
+                            폐기
+                          </button>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )
             ) : (
-              <div className="grid grid-cols-3 gap-2">
-                {received.map((it) => {
-                  const rarity = RARITY_TABLE[it.rarity] || RARITY_TABLE.normal
-                  return (
-                    <button key={it.id} onClick={() => setDetail(it)}
-                            className="flex flex-col items-center">
-                      <img src={it.image_url} alt={it.name}
-                           className="pixel h-16 w-16 rounded-lg"
-                           style={{ backgroundColor: rarity.color + '22' }} />
-                      <span className="mt-1 line-clamp-1 text-[11px]">{it.name}</span>
-                      <span className="line-clamp-1 text-[10px] text-gray-400">
-                        {it.sender?.nickname ?? it.sender?.full_name ?? '?'}
-                      </span>
-                    </button>
-                  )
-                })}
-              </div>
+              received.length === 0 ? (
+                <p className="py-8 text-center text-sm text-gray-400">아직 수령한 아이템이 없어요.</p>
+              ) : (
+                <div className="grid grid-cols-3 gap-2">
+                  {received.map((it) => {
+                    const rarity = RARITY_TABLE[it.rarity] || RARITY_TABLE.normal
+                    return (
+                      <button key={it.id} onClick={() => setDetail(it)}
+                              className="flex flex-col items-center">
+                        <img src={it.image_url} alt={it.name}
+                             className="pixel h-16 w-16 rounded-lg"
+                             style={{ backgroundColor: rarity.color + '22' }} />
+                        <span className="mt-1 line-clamp-1 text-[11px]">{it.name}</span>
+                        <span className="line-clamp-1 text-[10px] text-gray-400">
+                          {it.sender?.nickname ?? it.sender?.full_name ?? '?'}
+                        </span>
+                      </button>
+                    )
+                  })}
+                </div>
+              )
             )}
           </div>
         </div>
       )}
 
-      {/* 아이템 상세 */}
       {detail && (() => {
         const rarity = RARITY_TABLE[detail.rarity] || RARITY_TABLE.normal
         return (
@@ -201,9 +290,7 @@ export default function TradePage() {
               {detail.sender && (
                 <div className="mt-3 rounded-xl bg-lime-50 p-3 text-center">
                   <p className="text-xs text-gray-400">보낸 사람</p>
-                  <p className="font-bold">
-                    {detail.sender.nickname ?? detail.sender.full_name}
-                  </p>
+                  <p className="font-bold">{detail.sender.nickname ?? detail.sender.full_name}</p>
                   {detail.sender.bio && (
                     <p className="mt-0.5 text-xs text-gray-500">“{detail.sender.bio}”</p>
                   )}
@@ -224,9 +311,7 @@ export default function TradePage() {
                            style={{ width: `${statPercent(detail.stats?.[k] ?? 0)}%`,
                                     backgroundColor: STAT_LABELS[k].color }} />
                     </div>
-                    <span className="w-7 text-right text-xs font-bold">
-                      {detail.stats?.[k] ?? 0}
-                    </span>
+                    <span className="w-7 text-right text-xs font-bold">{detail.stats?.[k] ?? 0}</span>
                   </div>
                 ))}
                 <p className="mt-1 text-right text-[11px] text-gray-400">
