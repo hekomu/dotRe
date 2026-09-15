@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom'
 import TabBar from './components/TabBar'
 import ProtectedRoute from './components/ProtectedRoute'
+import RetroWindow from './components/RetroWindow'
 import LoginPage from './pages/LoginPage'
 import HomePage from './pages/HomePage'
 import CalendarPage from './pages/CalendarPage'
@@ -15,13 +16,17 @@ import ShopPage from './pages/ShopPage'
 import RoomEditPage from './pages/RoomEditPage'
 import CustomizePage from './pages/CustomizePage'
 
-/** 앱 셸 — 세로 플렉스. 본문만 스크롤되고 탭바는 항상 바닥에 */
+/** 앱 셸 — 세로 플렉스. 본문만 스크롤되고 탭바는 항상 바닥에.
+ *  0단계: 본문을 "Dotre Lab" 레트로 창 프레임(RetroWindow)으로 감싼다.
+ *  타이틀바/메뉴탭은 장식용이며 실제 이동은 여전히 하단 TabBar가 담당한다. */
 function Shell({ withTabBar = true }) {
   return (
     <div className="shell">
-      <main className="shell-main">
-        <Outlet />
-      </main>
+      <RetroWindow>
+        <main className="shell-main">
+          <Outlet />
+        </main>
+      </RetroWindow>
       {withTabBar && <TabBar />}
     </div>
   )

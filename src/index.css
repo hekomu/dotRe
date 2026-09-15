@@ -1,5 +1,46 @@
 @import "tailwindcss";
 
+/* ────────────────────────────────────────────────────────────
+   Dotre Lab 디자인 토큰 (0단계)
+   Tailwind v4 @theme — 아래 --color-* / --font-* 는 자동으로
+   bg-accent / text-accent-ink / font-galmuri11 같은 유틸리티 클래스가 됨
+   ──────────────────────────────────────────────────────────── */
+@theme {
+  --color-accent:      #ACE02A; /* 연두 포인트 */
+  --color-accent-ink:  #2f4a08; /* accent 위에 올릴 진한 텍스트/보더 */
+  --color-accent-2:    #ED2F89; /* 핑크 포인트 */
+  --color-accent-2-ink:#7a0f45;
+
+  --color-ink:         #1f241a; /* 기본 텍스트 */
+  --color-ink-dim:     #6b7266; /* 보조 텍스트 */
+  --color-surface:     #ffffff; /* 카드/모달 배경 */
+  --color-surface-2:   #f4f5ef; /* 은은한 배경(타이틀바 등) */
+  --color-border:      #c9cdbb; /* 옅은 보더 */
+  --color-line:        #1f241a; /* 두꺼운 레트로 아웃라인 컬러 */
+
+  --font-galmuri9:  'Galmuri9', ui-monospace, monospace;
+  --font-galmuri11: 'Galmuri11', ui-monospace, monospace;
+}
+
+/* Galmuri 폰트 — public/assets/fonts/ 에 woff2 파일을 넣으면 바로 적용됨.
+   폰트 파일: https://github.com/quiple/galmuri (or npm "galmuri" 패키지)에서 받기 */
+@font-face {
+  font-family: 'Galmuri9';
+  src: url('/assets/fonts/Galmuri9.woff2') format('woff2'),
+       url('/assets/fonts/Galmuri9.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Galmuri11';
+  src: url('/assets/fonts/Galmuri11.woff2') format('woff2'),
+       url('/assets/fonts/Galmuri11.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 :root {
   --shell-max: 432px;          /* 아이폰 15 Pro Max 폭 기준 */
   --tabbar-h: 56px;
@@ -15,6 +56,8 @@ html, body, #root {
 }
 
 body {
+  /* 본문/입력창은 가독성 위해 Galmuri가 아닌 기본 산세리프 유지.
+     제목·버튼·라벨 등 UI 크롬에만 font-galmuri9 / font-galmuri11 유틸리티를 사용할 것 */
   font-family: system-ui, -apple-system, "Pretendard", sans-serif;
   background: #e5e5e5;                    /* 데스크톱에서 셸 바깥 여백 */
   -webkit-tap-highlight-color: transparent;
@@ -45,20 +88,21 @@ body {
 /* 본문 — 여기만 스크롤된다 */
 .shell-main {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   padding: calc(var(--safe-top) + 16px) 16px 16px;
 }
 
-/* 하단 탭바 */
+/* 하단 탭바 — 0단계에서 토큰 색상으로 재스킨 (구조는 TabBar.jsx 그대로) */
 .tabbar {
   flex: none;
   height: calc(var(--tabbar-h) + var(--safe-bottom));
   padding-bottom: var(--safe-bottom);
   display: flex;
   align-items: center;
-  border-top: 1px solid #e5e5e5;
-  background: #fff;
+  border-top: 3px solid var(--color-line);
+  background: var(--color-surface);
 }
 
 .tabbar a {
@@ -67,12 +111,17 @@ body {
   align-items: center;
   justify-content: center;
   height: 100%;
-  font-size: 13px;
+  font-size: 11px;
+  font-weight: 700;
   text-decoration: none;
-  color: #888;
+  color: var(--color-ink-dim);
+  font-family: var(--font-galmuri11);
 }
 
-.tabbar a.active { color: #22c55e; font-weight: 700; }
+.tabbar a.active {
+  color: var(--color-accent-ink);
+  background: #f0f9d9; /* accent 18% 위에 흰색 — 저채도 하이라이트 */
+}
 
 /* 터치 대상 최소 44px, 입력창 16px (iOS 자동 확대 방지) */
 button, a[role="button"] { min-height: 44px; }
@@ -82,4 +131,15 @@ input, textarea, select { font-size: 16px; }
 .pixel {
   image-rendering: pixelated;
   image-rendering: crisp-edges;
+}
+
+/* 홈 화면 "일기 작성" 버튼 에셋(WriteButton.png / WriteButton_dis.png) —
+   창이 작아졌으니 고정 px가 아니라 부모 폭 기준 비율로 스케일.
+   기존 <img>의 폭/높이 지정 클래스를 이걸로 바꿔 끼우면 됨. */
+.write-btn {
+  display: block;
+  width: 100%;
+  max-width: 260px;
+  height: auto;
+  margin: 0 auto;
 }

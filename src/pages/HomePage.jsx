@@ -22,12 +22,12 @@ export default function HomePage() {
 
       {/* 2. 프로필 카드 */}
       <button onClick={() => navigate('/profile')}
-              className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/5 p-3 text-left">
+              className="flex items-center gap-3 rounded-2xl border border-grey/10 bg-white/5 p-3 text-left">
         <div className="flex h-14 w-14 flex-none items-center justify-center rounded-full bg-gray-700 text-xl border border-white/20">
           👤
         </div>
         <div className="flex flex-col">
-          <span className="text-sm font-bold text-white">프로필 설정</span>
+          <span className="text-sm font-bold ">프로필 설정</span>
         </div>
       </button>
 
@@ -43,7 +43,7 @@ export default function HomePage() {
       {/* 4. 하단 버튼 */}
       <div className="flex items-center justify-between gap-3 mt-2">
         <button onClick={() => navigate('/shop')}
-                className="rounded-xl bg-white/10 border border-white/20 px-5 py-3 font-bold text-white shadow">
+                className="rounded-xl bg-grey/10 border border-white/20 px-5 py-3 font-bold shadow">
           상점
         </button>
 

@@ -16,7 +16,9 @@ export default function NutsBadge({ className = '' }) {
   if (nuts === null) return null
 
   return (
-    <span className={`rounded-full bg-yellow-100 px-3 py-1 text-sm font-bold ${className}`}>
+    <span
+      className={`inline-flex items-center gap-1 rounded-full border border-line bg-[#fdf0c8] px-2.5 py-1 font-galmuri9 text-[11px] font-bold text-black ${className}`}
+    >
       🥜 {nuts}
     </span>
   )
