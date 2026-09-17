@@ -8,6 +8,13 @@ import {
 } from '../lib/tradeService'
 import { RARITY_TABLE, STAT_KEYS, STAT_LABELS, statPercent } from '../game/statSystem'
 
+const FAIL_MESSAGES = {
+  not_pending: '이미 처리된 아이템이에요.',
+  not_found: '거래 정보를 찾을 수 없어요.',
+  original_missing: '원본 아이템을 불러올 수 없어요. (items SELECT 권한 확인 필요)',
+  copy_blocked: '아이템을 보관함에 넣지 못했어요. (items INSERT 권한 확인 필요)',
+}
+
 export default function TradePage() {
   const { session } = useAuth()
   const myId = session?.user.id
@@ -59,15 +66,20 @@ export default function TradePage() {
     }
   }
 
-  const handleReceive = async (tradeId) => {
+   const handleReceive = async (tradeId) => {
     setDecidingId(tradeId)
     try {
       const r = await receiveTrade(tradeId)
-      if (!r.ok) alert('이미 처리된 아이템이에요.')
+      if (!r.ok) {
+        alert(FAIL_MESSAGES[r.reason] ?? `수령 실패 (${r.reason})`)
+        setPending(await getPendingTrades(myId))
+        return
+      }
       setPending((p) => p.filter((t) => t.tradeId !== tradeId))
       setReceived(await getReceivedItems(myId))
       setPendingCount((c) => Math.max(0, c - 1))
     } catch (err) {
+      console.error('[receive] 예외:', err)
       alert('수령 오류: ' + err.message)
     } finally {
       setDecidingId(null)
@@ -78,10 +90,16 @@ export default function TradePage() {
     if (!confirm('이 아이템을 받지 않고 버릴까요?')) return
     setDecidingId(tradeId)
     try {
-      await discardTrade(tradeId)
+      const r = await discardTrade(tradeId)
+      if (!r.ok) {
+        alert(FAIL_MESSAGES[r.reason] ?? `폐기 실패 (${r.reason})`)
+        setPending(await getPendingTrades(myId))
+        return
+      }
       setPending((p) => p.filter((t) => t.tradeId !== tradeId))
       setPendingCount((c) => Math.max(0, c - 1))
     } catch (err) {
+      console.error('[discard] 예외:', err)
       alert('폐기 오류: ' + err.message)
     } finally {
       setDecidingId(null)

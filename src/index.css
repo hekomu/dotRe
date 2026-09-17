@@ -138,8 +138,16 @@ input, textarea, select { font-size: 16px; }
    기존 <img>의 폭/높이 지정 클래스를 이걸로 바꿔 끼우면 됨. */
 .write-btn {
   display: block;
-  width: 100%;
-  max-width: 260px;
+  width: 60%;
   height: auto;
   margin: 0 auto;
+}
+
+/* 아직 최종 스타일/에셋이 정해지지 않은 요소용 임시 표시(회색 박스).
+   프로필 설정 구역, 상점 버튼처럼 "나중에 다시 손볼 것"에 붙여서 쓰면 됨.
+   최종 디자인이 정해지면 이 클래스만 떼어내고 원래 색으로 바꾸면 됨. */
+.placeholder-box {
+  background-color: #d9d9d9;
+  color: #000;
+  border: 2px dashed var(--color-line);
 }

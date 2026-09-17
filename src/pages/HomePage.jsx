@@ -55,7 +55,7 @@ export default function HomePage() {
           <img
             src={hasWrittenToday ? 'public/assets/ui/WriteButton_dis.png' : 'public/assets/ui/WriteButton.png'}
             alt={hasWrittenToday ? '오늘 일기 작성 완료' : '일기 작성'}
-            className="h-auto w-auto select-none"
+            className="write-btn select-none"
             draggable={false}
           />
         </button>
