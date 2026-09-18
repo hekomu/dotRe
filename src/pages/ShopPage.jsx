@@ -68,7 +68,8 @@ export default function ShopPage() {
           <button onClick={() => navigate('/')} className="text-xl text-gray-400">←</button>
           <h2 className="text-xl font-bold">상점</h2>
         </div>
-        <span className="rounded-full bg-yellow-100 px-3 py-1 text-sm font-bold">🥜 {nuts}</span>
+        <span className="inline-flex items-center gap-1 rounded-full bg-yellow-100 px-5 py-1 text-lg font-bold">
+        <img src="/assets/icons/Nuts.png" className="h-8 w-8" alt="" />{nuts}</span>
       </div>
 
       <div className="mb-3 flex gap-2">
@@ -140,11 +141,13 @@ export default function ShopPage() {
                           <button onClick={() => setQty((q) => ({ ...q, [it.id]: Math.min(remaining, n + 1) }))}
                                   className="h-6 w-6 rounded bg-gray-100 text-sm">+</button>
                         </div>
-                        <button onClick={() => handleBuy(it)}
-                                disabled={!canBuy || busy === it.id}
-                                className="w-full rounded-lg bg-lime-400 py-1.5 text-sm font-bold disabled:bg-gray-100 disabled:text-gray-400">
-                          {busy === it.id ? '구매 중...' : `🥜 ${it.price * n}`}
-                        </button>
+                        
+                         <button onClick={() => handleBuy(it)}
+                            disabled={!canBuy || busy === it.id}
+                            className="flex w-full items-center justify-center gap-1 rounded-lg bg-lime-400 py-1.5 text-sm font-bold disabled:bg-gray-100 disabled:text-gray-400">
+                            {busy === it.id ? ('구매 중...') : (<><img src="/assets/icons/Nuts.png" className="h-5.5 w-5.5" alt="" />
+                                {it.price * n}</>)}
+                    </button>
                       </div>
                     )}
                   </div>
@@ -188,10 +191,11 @@ export default function ShopPage() {
                   {f.owned ? (
                     <div className="mt-auto rounded-lg bg-gray-100 py-1.5 text-center text-xs text-gray-400">보유 중</div>
                   ) : (
-                    <button onClick={() => handleBuyFurniture(f)}
-                            disabled={furnBusy === f.id}
-                            className="mt-auto w-full rounded-lg bg-lime-400 py-1.5 text-sm font-bold disabled:bg-gray-100 disabled:text-gray-400">
-                      {furnBusy === f.id ? '구매 중...' : `🥜 ${f.price}`}
+                    <button onClick={() => handleBuy(it)}
+                            disabled={!canBuy || busy === it.id}
+                            className="flex w-full items-center justify-center gap-1 rounded-lg bg-lime-400 py-1.5 text-sm font-bold disabled:bg-gray-100 disabled:text-gray-400">
+                      {busy === it.id ? ('구매 중...') : (<><img src="/assets/icons/Nuts.png" className="h-3.5 w-3.5" alt="" />
+                          {it.price * n}</>)}
                     </button>
                   )}
                 </div>

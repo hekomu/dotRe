@@ -20,11 +20,16 @@ export default function HomePage() {
         <HomeHeader onStatusLoaded={handleStatusLoaded} />
       </div>
 
-      {/* 2. 프로필 카드 */}
+      {/* 2. 프로필 카드 — ▼ 프로필 이미지 교체 (char/Portrait.png) */}
       <button onClick={() => navigate('/profile')}
               className="flex items-center gap-3 rounded-2xl border border-grey/10 bg-white/5 p-3 text-left">
-        <div className="flex h-14 w-14 flex-none items-center justify-center rounded-full bg-gray-700 text-xl border border-white/20">
-          👤
+        <div className="h-14 w-14 flex-none overflow-hidden rounded-full border border-white/20 bg-gray-700">
+          <img
+            src="/assets/char/Portrait.png"
+            alt="프로필"
+            className="h-full w-full object-cover"
+            draggable={false}
+          />
         </div>
         <div className="flex flex-col">
           <span className="text-sm font-bold ">프로필 설정</span>
@@ -40,11 +45,15 @@ export default function HomePage() {
         </button>
       </div>
 
-      {/* 4. 하단 버튼 */}
-      <div className="flex items-center justify-between gap-3 mt-2">
-        <button onClick={() => navigate('/shop')}
-                className="rounded-xl bg-grey/10 border border-white/20 px-5 py-3 font-bold shadow">
-          상점
+      {/* 4. 하단 버튼 — ▼ 상점 버튼 이미지 교체 (ui/Shop.png) */}
+      <div className="flex w-full items-center justify-between gap-3 mt-2">
+        <button onClick={() => navigate('/shop')} aria-label="상점">
+          <img
+            src="/assets/ui/Shop.png"
+            alt="상점"
+            className="shop-btn select-none"
+            draggable={false}
+          />
         </button>
 
         <button
@@ -53,9 +62,9 @@ export default function HomePage() {
           aria-label={hasWrittenToday ? '오늘 일기 작성 완료' : '일기 작성'}
         >
           <img
-            src={hasWrittenToday ? 'public/assets/ui/WriteButton_dis.png' : 'public/assets/ui/WriteButton.png'}
+            src={hasWrittenToday ? '/assets/ui/WriteButton_dis.png' : '/assets/ui/WriteButton.png'}
             alt={hasWrittenToday ? '오늘 일기 작성 완료' : '일기 작성'}
-            className="write-btn select-none"
+            className="ml-auto write-btn select-none"
             draggable={false}
           />
         </button>

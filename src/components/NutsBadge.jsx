@@ -17,9 +17,9 @@ export default function NutsBadge({ className = '' }) {
 
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-full border border-line bg-[#fdf0c8] px-2.5 py-1 font-galmuri9 text-[11px] font-bold text-black ${className}`}
+      className={`inline-flex items-center gap-1 rounded-full border border-line bg-[#fdf0c8] px-3 py-1 font-galmuri9 text-[14px] font-bold text-black ${className}`}
     >
-      🥜 {nuts}
+      <img src="/assets/icons/Nuts.png" className="h-6 w-6" /> {nuts}
     </span>
   )
 }

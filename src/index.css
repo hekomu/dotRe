@@ -42,8 +42,8 @@
 }
 
 :root {
-  --shell-max: 432px;          /* 아이폰 15 Pro Max 폭 기준 */
-  --tabbar-h: 56px;
+  --shell-max: 432px;
+  --tabbar-h: 84px;   /* ← 56px에서 1.5배로 */
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-top: env(safe-area-inset-top, 0px);
 }
@@ -98,24 +98,31 @@ body {
 .tabbar {
   flex: none;
   height: calc(var(--tabbar-h) + var(--safe-bottom));
-  padding-bottom: var(--safe-bottom);
   display: flex;
   align-items: center;
   border-top: 3px solid var(--color-line);
   background: var(--color-surface);
+  padding: 6px 4px calc(8px + var(--safe-bottom));  /* safe-bottom 여기로 합침 */
 }
 
 .tabbar a {
   flex: 1;
   display: flex;
+  flex-direction: column;   /* ← 아이콘 위, 텍스트 아래로 쌓기 */
   align-items: center;
   justify-content: center;
+  gap: 1px;
   height: 100%;
-  font-size: 11px;
+  font-size: 16px;
   font-weight: 700;
   text-decoration: none;
   color: var(--color-ink-dim);
   font-family: var(--font-galmuri11);
+}
+
+.tabbar-icon {
+  width: 60px;
+  height: 60px;
 }
 
 .tabbar a.active {
@@ -136,11 +143,11 @@ input, textarea, select { font-size: 16px; }
 /* 홈 화면 "일기 작성" 버튼 에셋(WriteButton.png / WriteButton_dis.png) —
    창이 작아졌으니 고정 px가 아니라 부모 폭 기준 비율로 스케일.
    기존 <img>의 폭/높이 지정 클래스를 이걸로 바꿔 끼우면 됨. */
-.write-btn {
+.write-btn,
+.shop-btn {
   display: block;
-  width: 60%;
+  width: 80%;
   height: auto;
-  margin: 0 auto;
 }
 
 /* 아직 최종 스타일/에셋이 정해지지 않은 요소용 임시 표시(회색 박스).
@@ -151,3 +158,4 @@ input, textarea, select { font-size: 16px; }
   color: #000;
   border: 2px dashed var(--color-line);
 }
+
