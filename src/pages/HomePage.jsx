@@ -1,16 +1,22 @@
 import { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../lib/AuthContext'
+import { isDevAccount } from '../lib/devAccounts'
 import NutsBadge from '../components/NutsBadge'
 import MyRoom from '../components/MyRoom'
 import HomeHeader from '../components/HomeHeader'
 
 export default function HomePage() {
   const navigate = useNavigate()
+  const { session } = useAuth()
   const [hasWrittenToday, setHasWrittenToday] = useState(false)
 
   const handleStatusLoaded = useCallback((isWritten) => {
     setHasWrittenToday(isWritten)
   }, [])
+
+  // 개발자 계정은 오늘 이미 썼더라도 버튼을 잠그지 않는다
+  const lockWrite = hasWrittenToday && !isDevAccount(session?.user?.id)
 
   return (
     <div className="flex flex-col gap-4 p-4">
@@ -20,9 +26,9 @@ export default function HomePage() {
         <HomeHeader onStatusLoaded={handleStatusLoaded} />
       </div>
 
-      {/* 2. 프로필 카드 — ▼ 프로필 이미지 교체 (char/Portrait.png) */}
+      {/* 2. 프로필 카드 */}
       <button onClick={() => navigate('/profile')}
-              className="flex items-center gap-3 rounded-2xl border border-grey/10 bg-white/5 p-3 text-left">
+              className="flex items-center gap-3 rounded-2xl border border-gray-500/10 bg-white/5 p-3 text-left">
         <div className="h-14 w-14 flex-none overflow-hidden rounded-full border border-white/20 bg-gray-700">
           <img
             src="/assets/char/Portrait.png"
@@ -32,7 +38,7 @@ export default function HomePage() {
           />
         </div>
         <div className="flex flex-col">
-          <span className="text-sm font-bold ">프로필 설정</span>
+          <span className="text-sm font-bold">프로필 설정</span>
         </div>
       </button>
 
@@ -45,7 +51,7 @@ export default function HomePage() {
         </button>
       </div>
 
-      {/* 4. 하단 버튼 — ▼ 상점 버튼 이미지 교체 (ui/Shop.png) */}
+      {/* 4. 하단 버튼 */}
       <div className="flex w-full items-center justify-between gap-3 mt-2">
         <button onClick={() => navigate('/shop')} aria-label="상점">
           <img
@@ -58,12 +64,12 @@ export default function HomePage() {
 
         <button
           onClick={() => navigate('/write')}
-          disabled={hasWrittenToday}
-          aria-label={hasWrittenToday ? '오늘 일기 작성 완료' : '일기 작성'}
+          disabled={lockWrite}
+          aria-label={lockWrite ? '오늘 일기 작성 완료' : '일기 작성'}
         >
           <img
-            src={hasWrittenToday ? '/assets/ui/WriteButton_dis.png' : '/assets/ui/WriteButton.png'}
-            alt={hasWrittenToday ? '오늘 일기 작성 완료' : '일기 작성'}
+            src={lockWrite ? '/assets/ui/WriteButton_dis.png' : '/assets/ui/WriteButton.png'}
+            alt={lockWrite ? '오늘 일기 작성 완료' : '일기 작성'}
             className="ml-auto write-btn select-none"
             draggable={false}
           />

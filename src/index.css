@@ -159,3 +159,9 @@ input, textarea, select { font-size: 16px; }
   border: 2px dashed var(--color-line);
 }
 
+
+/* .shell의 image-rendering: pixelated가 모든 img로 상속되는 것 차단.
+   도트 스프라이트(.pixel)만 픽셀 유지하고, 축소되는 UI 에셋은 부드럽게 렌더링 */
+.shell img:not(.pixel) {
+  image-rendering: auto;
+}
