@@ -165,3 +165,12 @@ input, textarea, select { font-size: 16px; }
 .shell img:not(.pixel) {
   image-rendering: auto;
 }
+
+/* 스크롤은 되지만 스크롤바는 안 보이게 — 일기 입력란용 */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
