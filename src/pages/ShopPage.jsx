@@ -173,35 +173,39 @@ export default function ShopPage() {
             ))}
           </div>
 
-          {furnList.length === 0 ? (
-            <p className="mt-8 text-center text-sm text-gray-400">이 카테고리엔 아직 가구가 없어요.</p>
-          ) : (
-            <div className="grid auto-rows-fr grid-cols-3 gap-2">
-              {furnList.map((f) => (
-                <div key={f.id} className="flex h-full flex-col rounded-2xl border p-2">
-                  <div className="flex h-20 items-center justify-center rounded-xl bg-gray-50">
-                    {f.image_url ? (
-                      <img src={f.image_url} alt={f.name} className="pixel h-16 w-16 object-contain" />
-                    ) : (
-                      <span className="text-[10px] text-gray-300">이미지 준비 중</span>
-                    )}
-                  </div>
-                  <p className="mt-2 line-clamp-2 h-8 text-center text-xs font-bold leading-4">{f.name}</p>
+{furnList.length === 0 ? (
+  <p className="mt-8 text-center text-sm text-gray-400">이 카테고리엔 아직 가구가 없어요.</p>
+) : (
+  <div className="grid auto-rows-fr grid-cols-3 gap-2">
+    {furnList.map((f) => {
+      const canBuyFurn = furniture.nuts >= f.price
 
-                  {f.owned ? (
-                    <div className="mt-auto rounded-lg bg-gray-100 py-1.5 text-center text-xs text-gray-400">보유 중</div>
-                  ) : (
-                    <button onClick={() => handleBuy(it)}
-                            disabled={!canBuy || busy === it.id}
-                            className="flex w-full items-center justify-center gap-1 rounded-lg bg-lime-400 py-1.5 text-sm font-bold disabled:bg-gray-100 disabled:text-gray-400">
-                      {busy === it.id ? ('구매 중...') : (<><img src="/assets/icons/Nuts.png" className="h-3.5 w-3.5" alt="" />
-                          {it.price * n}</>)}
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
+      return (
+        <div key={f.id} className="flex h-full flex-col rounded-2xl border p-2">
+          <div className="flex h-20 items-center justify-center rounded-xl bg-gray-50">
+            {f.image_url ? (
+              <img src={f.image_url} alt={f.name} className="pixel h-16 w-16 object-contain" />
+            ) : (
+              <span className="text-[10px] text-gray-300">이미지 준비 중</span>
+            )}
+          </div>
+          <p className="mt-2 line-clamp-2 h-8 text-center text-xs font-bold leading-4">{f.name}</p>
+
+          {f.owned ? (
+            <div className="mt-auto rounded-lg bg-gray-100 py-1.5 text-center text-xs text-gray-400">보유 중</div>
+          ) : (
+            <button onClick={() => handleBuyFurniture(f)}
+                    disabled={!canBuyFurn || furnBusy === f.id}
+                    className="mt-auto flex w-full items-center justify-center gap-1 rounded-lg bg-lime-400 py-1.5 text-sm font-bold disabled:bg-gray-100 disabled:text-gray-400">
+              {furnBusy === f.id ? ('구매 중...') : (<><img src="/assets/icons/Nuts.png" className="h-3.5 w-3.5" alt="" />
+                  {f.price}</>)}
+            </button>
           )}
+        </div>
+      )
+    })}
+  </div>
+)}
         </>
       )}
     </div>

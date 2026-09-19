@@ -6,7 +6,10 @@ const SIZE = 0.22
 const FURN_SIZE = 0.3
 const AVATAR_SIZE = 0.32
 
-export default function MyRoom({ className = '' }) {
+// 방 기본 배경 — 상점에서 구매한 배경이 있으면 background prop으로 덮어씀
+const DEFAULT_ROOM_BG = '/assets/room/RoomBase.png'
+
+export default function MyRoom({ className = '', background }) {
   const { session } = useAuth()
   const [items, setItems] = useState([])
   const [furniture, setFurniture] = useState([])
@@ -25,16 +28,16 @@ export default function MyRoom({ className = '' }) {
 
   return (
     <div className={`relative aspect-square w-full overflow-hidden ${className}`}>
-      {/* ▼ 방 배경 (room/Room.png) — 항상 맨 뒤 */}
+      {/* ▼ 방 배경 — 구매 배경(background) 있으면 그걸, 없으면 기본 배경 */}
       <img
-        src="/assets/room/Room.png"
+        src={background || DEFAULT_ROOM_BG}
         alt=""
         className="absolute inset-0 h-full w-full object-cover"
-        style={{ zIndex: -1 }}
+        style={{ zIndex: 0 }}
         draggable={false}
       />
 
-      {/* ▼ 임시 배치 아바타 (char/Avatar.png) — 파츠 합성 전까지 고정 위치 */}
+      {/* 임시 배치 아바타 — 파츠 합성 전까지 고정 위치 (s3-3에서 교체 예정) */}
       <img
         src="/assets/char/Avatar.png"
         alt="내 아바타"

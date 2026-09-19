@@ -44,7 +44,7 @@ export default function HomePage() {
 
       {/* 3. 방 (MyRoom) */}
       <div className="relative w-full">
-        <MyRoom className="rounded-2xl bg-gray-900 border border-white/10" />
+        <MyRoom className="rounded-2xl border border-white/10" />
         <button onClick={() => navigate('/room')} aria-label="방 꾸미기"
                 className="absolute right-2 top-2 z-50 rounded-full bg-black/60 p-2 shadow backdrop-blur-md">
           ✏️
