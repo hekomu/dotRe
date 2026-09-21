@@ -19,29 +19,32 @@ export default function HomePage() {
   const lockWrite = hasWrittenToday && !isDevAccount(session?.user?.id)
 
   return (
-    <div className="flex flex-col gap-4 p-4">
-      {/* 1. 상단 바: 좌측 너트 배지 & 우측 날짜/연속작성 컴포넌트 */}
-      <div className="flex items-center justify-between">
-        <NutsBadge />
-        <HomeHeader onStatusLoaded={handleStatusLoaded} />
-      </div>
+    <div className="flex flex-col gap-4 p-2">
+      {/* 1. 프로필 카드 + 오늘 기록 카드 */}
+      <div className="flex gap-[2%]">
+        {/* 프로필 카드 — 클릭 시 프로필 설정으로 이동 */}
+          <button
+            onClick={() => navigate('/profile')}
+            className="flex w-[61%] items-center gap-[4%] rounded-xl bg-surface-2 p-[3.5%] text-left"
+          >
+            <div className="w-[35%] flex-none overflow-hidden rounded-lg bg-white p-[4%]">
+              <img src="/assets/char/Portrait.png" alt="" className="block w-full" draggable={false} />
+            </div>
+            <div className="flex min-w-0 flex-1 flex-col gap-1">
+              {/* ▼ 닉네임 필드명은 실제 스키마에 맞게 바꿔줘 */}
+              <span className="truncate font-galmuri11 text-[13px] text-ink">
+                {session?.user?.user_metadata?.nickname ?? '이름'}
+              </span>
+              <NutsBadge />
+              <span className="text-right font-galmuri11 text-[9px] text-ink-dim">프로필 설정</span>
+            </div>
+          </button>
 
-      {/* 2. 프로필 카드 */}
-      <button onClick={() => navigate('/profile')}
-              className="flex items-center gap-3 rounded-2xl border border-gray-500/10 bg-white/5 p-3 text-left">
-        <div className="h-14 w-14 flex-none overflow-hidden rounded-full border border-white/20 bg-gray-700">
-          <img
-            src="/assets/char/Portrait.png"
-            alt="프로필"
-            className="h-full w-full object-cover"
-            draggable={false}
-          />
-        </div>
-        <div className="flex flex-col">
-          <span className="text-sm font-bold">프로필 설정</span>
-        </div>
-      </button>
-
+    {/* 오늘 기록 카드 */}
+    <div className="flex flex-1 flex-col justify-center rounded-xl bg-surface-2 p-[3.5%]">
+      <HomeHeader onStatusLoaded={handleStatusLoaded} />
+    </div>
+  </div>
       {/* 3. 방 (MyRoom) */}
       <div className="relative w-full">
         <MyRoom className="rounded-2xl border border-white/10" />

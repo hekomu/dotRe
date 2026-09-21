@@ -1,13 +1,9 @@
+import { ITEM_SIZE as SIZE, FURN_SIZE, DEFAULT_ROOM_BG } from '../lib/roomConfig'
 import { useState, useEffect } from 'react'
 import { useAuth } from '../lib/AuthContext'
 import { getPlacedItems, getPlacedFurniture } from '../lib/roomService'
 
-const SIZE = 0.22
-const FURN_SIZE = 0.3
 const AVATAR_SIZE = 0.32
-
-// 방 기본 배경 — 상점에서 구매한 배경이 있으면 background prop으로 덮어씀
-const DEFAULT_ROOM_BG = '/assets/room/RoomBase.png'
 
 export default function MyRoom({ className = '', background }) {
   const { session } = useAuth()

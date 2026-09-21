@@ -1,10 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/AuthContext'
-import { createDiaryWithItem } from '../lib/diaryService'
+import { createDiaryWithItem, getStreakDays } from '../lib/diaryService'
 
-// 연속 작성일 — 지금은 임시값, 추후 HomeHeader와 같은 소스로 연결 예정
-const STREAK = 5
 
 export default function DiaryWritePage() {
   const { session } = useAuth()
@@ -14,6 +12,7 @@ export default function DiaryWritePage() {
   const [photoFile, setPhotoFile] = useState(null)
   const [preview, setPreview] = useState(null)
   const [submitting, setSubmitting] = useState(false)
+  const [streak, setStreak] = useState(0)
 
   // 사진 선택 시 미리보기 만들기
   const handlePhotoChange = (e) => {
@@ -48,6 +47,13 @@ export default function DiaryWritePage() {
     }
   }
 
+  // 연속 작성일 — HomeHeader와 같은 소스(getStreakDays) 사용
+  useEffect(() => {
+    const id = session?.user?.id
+    if (!id) return
+    getStreakDays(id).then(setStreak).catch(console.error)
+  }, [session])
+
   return (
     <div className="flex flex-col gap-2.5 px-[3.5%] py-[3%]">
       {/* ── 상단 2칸: ITEM PHOTO / 마스코트 ── */}
@@ -78,7 +84,7 @@ export default function DiaryWritePage() {
             <div className="absolute inset-x-0 top-[20%] text-center font-galmuri11 text-[11px] leading-tight text-ink">
               <div>오늘은 연속 작성</div>
               <div>
-                <span className="text-[18px] font-bold text-accent-2">{STREAK}</span> 일째 입니다!
+                <span className="text-[18px] font-bold text-accent-2">{streak}</span> 일째 입니다!
               </div>
             </div>
           </div>

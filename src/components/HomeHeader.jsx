@@ -46,14 +46,11 @@ export default function HomeHeader({ onStatusLoaded }) {
       {/* 오늘 작성 여부 & 연속 작성일 배지 */}
       <div className="flex flex-wrap items-center justify-end gap-1.5">
         <span
-          className={`rounded-full border border-line px-2 py-0.5 text-[10px] font-bold text-black ${
-            writtenToday ? 'bg-accent' : 'bg-white'
-          }`}
-        >
-          {writtenToday ? '오늘 기록 완료!' : '오늘 미작성'}
+          className={`rounded-full border border-line px-2 py-0.5 text-[10px] font-bold text-black 
+            ${writtenToday ? 'bg-accent' : 'bg-white'}`}> {writtenToday ? '오늘 기록 완료!' : '오늘 미작성'}
         </span>
-        <span className="rounded-full border border-line bg-white px-2 py-0.5 text-[10px] font-bold text-black">
-          🔥 연속 작성 {streak}일째
+        <span className=" px-2 py-0.5 text-[10px] font-bold text-black">
+          연속 작성 {streak}일째
         </span>
       </div>
     </div>

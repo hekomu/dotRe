@@ -1,10 +1,8 @@
+import { ITEM_SIZE as SIZE, FURN_SIZE, DEFAULT_ROOM_BG } from '../lib/roomConfig'
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/AuthContext'
 import { getRoomItems, saveRoomLayout, getRoomFurniture, saveFurnitureLayout } from '../lib/roomService'
-
-const SIZE = 0.22
-const FURN_SIZE = 0.3
 
 export default function RoomEditPage() {
   const { session } = useAuth()
@@ -95,7 +93,14 @@ export default function RoomEditPage() {
            onPointerUp={() => setDragId(null)}
            onPointerLeave={() => setDragId(null)}
            onPointerDown={(e) => { if (e.target === roomRef.current) setSelected(null) }}
-           className="relative aspect-square w-full touch-none overflow-hidden rounded-2xl bg-gray-100">
+           className="relative aspect-square w-full touch-none overflow-hidden rounded-2xl">
+             <img
+                src={DEFAULT_ROOM_BG}
+                alt=""
+                className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+                style={{ zIndex: 0 }}
+                draggable={false}
+              />
         {placedAll.map((r) => (
           <img key={`${r.kind}-${r.id}`}
                src={r.image}

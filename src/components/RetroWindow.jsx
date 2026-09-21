@@ -1,7 +1,7 @@
 const MENU_TABS = ['Exchange', 'Calendar', 'Report', 'Friends']
 
-const WINDOW_W = '90%'
-const WINDOW_H = '89%'
+const WINDOW_W = '90%'     // 창 가로 폭 (부모 폭 기준)
+const WINDOW_RATIO = 1.7   // 명세서 목업 창 비율(세로÷가로) — 높이는 여기서 자동 계산
 
 // WindowBar.png 실제 크기(1610x318) 비율 — 콘텐츠가 시작할 위치를 여기서 자동 계산
 const WINDOWBAR_RATIO = 318 / 1610 // ≈ 0.1975
@@ -11,7 +11,7 @@ export default function RetroWindow({ title = 'Dotre Lab - Report', activeTab = 
     <div className="flex min-h-0 flex-1 items-center justify-center">
       <div
         className="relative flex min-h-0 flex-col shadow-[4px_4px_0_rgba(0,0,0,0.35)]"
-        style={{ width: WINDOW_W, height: WINDOW_H }}
+        style={{ width: WINDOW_W, aspectRatio: `1 / ${WINDOW_RATIO}`, maxHeight: '100%' }}
       >
         {/* 흰 배경 — 창 맨 위(0)부터 시작. 이미지가 이 위에 겹쳐서 얹히므로 틈이 생길 수가 없음 */}
         <div
