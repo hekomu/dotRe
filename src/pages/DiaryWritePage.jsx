@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/AuthContext'
 import { createDiaryWithItem, getStreakDays } from '../lib/diaryService'
+import HelpModal from '../components/HelpModal'
 
 
 export default function DiaryWritePage() {
@@ -13,6 +14,7 @@ export default function DiaryWritePage() {
   const [preview, setPreview] = useState(null)
   const [submitting, setSubmitting] = useState(false)
   const [streak, setStreak] = useState(0)
+  const [showHelp, setShowHelp] = useState(false)
 
   // 사진 선택 시 미리보기 만들기
   const handlePhotoChange = (e) => {
@@ -119,10 +121,12 @@ export default function DiaryWritePage() {
         </button>
 
         {/* 도움말 모달은 s1-4에서 제작 예정 — 지금은 버튼만 */}
-        <button aria-label="도움말" className="w-[15%]">
+          <button onClick={() => setShowHelp(true)} aria-label="도움말" className="w-[11%]">
           <img src="/assets/ui/Support.png" alt="" className="block w-full select-none" draggable={false} />
         </button>
       </div>
+
+      {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
     </div>
   )
 }
