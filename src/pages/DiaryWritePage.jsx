@@ -55,33 +55,25 @@ export default function DiaryWritePage() {
   }, [session])
 
   return (
-    <div className="flex flex-col gap-2.5 px-[3.5%] py-[3%]">
-      {/* ── 상단 2칸: ITEM PHOTO / 마스코트 ── */}
+    <div className="flex flex-col gap-2.5 px-[1%] py-[1.5%]">
+      {/* ── 상단 2칸: 사진 첨부 / 마스코트 ── */}
       <div className="flex gap-[2%]">
-        {/* 사진 첨부 칸 */}
-        <div className="flex-1">
-          <div className="relative">
-            <img src="/assets/ui/MiniTab.png" alt="" className="block w-full select-none" draggable={false} />
-            {/* 미니탭 텍스트 — 위치는 left-[%], 크기는 text-[px]로 조절 */}
-            <span className="absolute left-[19%] top-1/2 -translate-y-1/2 font-galmuri9 text-[12px]  text-ink">
-              ITEM PHOTO
-            </span>
-          </div>
-          <label className="relative block cursor-pointer">
-            <img src="/assets/ui/PhotoBlank.png" alt="" className="block w-full select-none" draggable={false} />
-            {preview && (
-              <img src={preview} alt="미리보기" className="absolute inset-[9%] h-[82%] w-[82%] object-cover" />
-            )}
+        {/* 사진 첨부 칸 — Photo.png (미니탭+흰 박스 일체형) */}
+        <div className="relative flex-1">
+          <img src="/assets/ui/Photo.png" alt="" className="block w-full select-none" draggable={false} />
+
+          {/* 사진 첨부 영역 — 클릭하면 파일 선택, 첨부하면 미리보기가 칸을 채움 */}
+          <label className="absolute bottom-[7%] left-[8%] right-[8%] top-[16%] cursor-pointer overflow-hidden">
+            {preview && <img src={preview} alt="미리보기" className="h-full w-full object-cover" />}
             <input type="file" accept="image/*" onChange={handlePhotoChange} className="hidden" />
           </label>
         </div>
 
-        {/* 마스코트 + 말풍선 */}
+        {/* 마스코트 + 말풍선 — 사진 칸 높이에 맞춰 자동으로 늘어남 */}
         <div className="relative flex-1 overflow-hidden rounded-[6px] bg-accent/25">
-          <div className="absolute right-[14%] top-[10%] w-[70%]">
+          <div className="absolute right-[13%] top-[9%] w-[70%]">
             <img src="/assets/ui/Bubble.png" alt="" className="block w-full select-none" draggable={false} />
-            {/* 말풍선 안 텍스트 — 숫자만 핑크·볼드·큰 사이즈 */}
-            <div className="absolute inset-x-0 top-[20%] text-center font-galmuri11 text-[11px] leading-tight text-ink">
+            <div className="absolute inset-x-0 top-[17%] text-center font-galmuri11 text-[11px] leading-tight text-ink">
               <div>오늘은 연속 작성</div>
               <div>
                 <span className="text-[18px] font-bold text-accent-2">{streak}</span> 일째 입니다!
@@ -91,7 +83,7 @@ export default function DiaryWritePage() {
           <img
             src="/assets/char/Mascot.png"
             alt=""
-            className="absolute top-[54%] bottom-0 left-1/2 w-[82%] -translate-x-1/2 select-none"
+            className="absolute bottom-3 left-1/2 w-[82%] -translate-x-1/2 select-none"
             draggable={false}
           />
         </div>
@@ -99,19 +91,14 @@ export default function DiaryWritePage() {
 
       {/* ── TODAY REPORT ── */}
       <div>
+        {/* ── 일기 입력 칸 — Write.png (미니탭+흰 박스 일체형) ── */}
         <div className="relative">
-          <img src="/assets/ui/MiniTab.png" alt="" className="block w-full select-none" draggable={false} />
-          <span className="absolute left-[17%] top-1/2 -translate-y-1/2 font-galmuri9 text-[12px] text-ink">
-            TODAY REPORT
-          </span>
-        </div>
-        <div className="relative">
-          <img src="/assets/ui/WriteBlank.png" alt="" className="block w-full select-none" draggable={false} />
+          <img src="/assets/ui/Write.png" alt="" className="block w-full select-none" draggable={false} />
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="오늘 하루를 기록해보세요"
-            className="no-scrollbar absolute inset-[6%] resize-none bg-transparent font-galmuri11 text-[10px] leading-relaxed text-ink outline-none placeholder:text-ink-dim"
+            className="no-scrollbar absolute bottom-[7%] left-[8%] right-[4%] top-[17%] resize-none bg-transparent font-galmuri11 text-[11px] leading-relaxed text-ink outline-none placeholder:text-ink-dim"
           />
         </div>
       </div>
