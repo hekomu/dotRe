@@ -49,7 +49,7 @@ export default function HomeHeader({ onStatusLoaded }) {
           className={`rounded-full border border-line px-2 py-0.5 text-[10px] font-bold text-black 
             ${writtenToday ? 'bg-accent' : 'bg-white'}`}> {writtenToday ? '오늘 기록 완료!' : '오늘 미작성'}
         </span>
-        <span className=" px-2 py-0.5 text-[10px] font-bold text-black">
+        <span className=" px-2 py-0.5 text-[10px] text-black">
           연속 작성 {streak}일째
         </span>
       </div>

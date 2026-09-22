@@ -27,10 +27,16 @@ function Shell({ withTabBar = true }) {
           <Outlet />
         </main>
       </RetroWindow>
-      {withTabBar && <TabBar />}
+      {withTabBar ? (
+        <TabBar />
+      ) : (
+        /* 탭바 없는 페이지도 창 위치가 같게 — 같은 크기의 빈 자리만 차지 */
+        <div className="tabbar" style={{ visibility: 'hidden' }} aria-hidden="true" />
+      )}
     </div>
   )
 }
+
 
 /** 로그인 필요 + 탭바 있음 */
 function TabLayout() {

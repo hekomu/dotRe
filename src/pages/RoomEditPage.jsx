@@ -31,6 +31,7 @@ export default function RoomEditPage() {
     ...itemRows.filter((r) => r.placed).map((r) => ({ ...r, kind: 'item', image: r.items.image_url, name: r.items.name, size: SIZE })),
     ...furnRows.filter((r) => r.placed).map((r) => ({ ...r, kind: 'furniture', image: r.furniture_catalog?.image_url, name: r.furniture_catalog?.name, size: FURN_SIZE })),
   ]
+
   const storedItems = itemRows.filter((r) => !r.placed)
   const storedFurn = furnRows.filter((r) => !r.placed)
 
@@ -112,7 +113,7 @@ export default function RoomEditPage() {
                  setDragId({ kind: r.kind, id: r.id })
                  setSelected({ kind: r.kind, id: r.id })
                }}
-               className={`pixel absolute -translate-x-1/2 -translate-y-1/2 cursor-move select-none
+               className={`pixel absolute cursor-move select-none
                  ${selected?.kind === r.kind && selected?.id === r.id ? 'ring-2 ring-lime-400' : ''}`}
                style={{
                  left: `${(r.x ?? 0.5) * 100}%`,
@@ -203,6 +204,7 @@ export default function RoomEditPage() {
           )
         )}
       </div>
+
     </div>
   )
 }

@@ -101,7 +101,7 @@ export default function FriendsPage() {
   return (
     <div className="p-4">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-bold">친구</h2>
+        <h2 className="text-xl font-bold">친구 목록</h2>
       </div>
 
       {/* 친구 목록 — 기본 화면 */}

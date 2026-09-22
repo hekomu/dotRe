@@ -43,7 +43,7 @@
 
 :root {
   --shell-max: 432px;
-  --tabbar-h: 84px;   /* ← 56px에서 1.5배로 */
+  --tabbar-h: 90px;   /* ← 56px에서 1.5배로 */
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-top: env(safe-area-inset-top, 0px);
 }
@@ -91,7 +91,7 @@ body {
   min-height: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: calc(var(--safe-top) + 16px) 16px 16px;
+  padding: calc(var(--safe-top) + 6px) 16px 16px;
 }
 
 /* 하단 탭바 — 0단계에서 토큰 색상으로 재스킨 (구조는 TabBar.jsx 그대로) */
@@ -100,7 +100,7 @@ body {
   display: flex;
   align-items: center;
   height: var(--tabbar-h);
-  margin: 0 10px calc(12px + var(--safe-bottom));  /* 좌우·아래 띄우기 */
+  margin: 0 10px calc(20px + var(--safe-bottom));  /* 좌우·아래 띄우기 */
   padding: 6px 4px;
   border: 3px solid var(--color-line);   /* 위쪽만 → 사방 테두리 */
   border-radius: 18px;
@@ -116,7 +116,7 @@ body {
   justify-content: center;
   gap: 1px;
   height: 100%;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
   text-decoration: none;
   color: var(--color-ink-dim);

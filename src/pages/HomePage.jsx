@@ -55,7 +55,7 @@ export default function HomePage() {
       </div>
 
       {/* 4. 하단 버튼 */}
-      <div className="flex w-full items-center justify-between gap-3 mt-2">
+      <div className="flex w-full items-center justify-between gap-3 mt-0">
         <button onClick={() => navigate('/shop')} aria-label="상점">
           <img
             src="/assets/ui/Shop.png"

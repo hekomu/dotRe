@@ -35,7 +35,7 @@ export default function RetroWindow({ title = 'Dotre Lab - Report', activeTab = 
             className="block w-full h-auto select-none"
             draggable={false}
           />
-          <span className="absolute left-[10%] top-[6%] font-galmuri9 text-[16px] font-bold text-accent-ink">
+          <span className="absolute left-[10%] top-[6%] font-galmuri9 text-[16px] text-accent-ink">
             {title}
           </span>
           <div

@@ -21,7 +21,7 @@ export default function MyRoom({ className = '', background }) {
     ...items.map((r) => ({ ...r, key: `i-${r.id}`, image: r.items.image_url, name: r.items.name, size: SIZE })),
     ...furniture.map((r) => ({ ...r, key: `f-${r.id}`, image: r.furniture_catalog?.image_url, name: r.furniture_catalog?.name, size: FURN_SIZE })),
   ]
-
+ 
   return (
     <div className={`relative aspect-square w-full overflow-hidden ${className}`}>
       {/* ▼ 방 배경 — 구매 배경(background) 있으면 그걸, 없으면 기본 배경 */}
