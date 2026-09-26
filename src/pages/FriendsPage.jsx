@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/AuthContext'
 import {
   searchUserByEmail,
@@ -15,6 +16,7 @@ import ProfileCard from '../components/ProfileCard'
 export default function FriendsPage() {
   const { session } = useAuth()
   const myId = session?.user.id
+  const navigate = useNavigate()
 
   const [keyword, setKeyword] = useState('')
   const [searchResult, setSearchResult] = useState(null)
@@ -99,65 +101,77 @@ export default function FriendsPage() {
   }
 
   return (
-    <div className="p-4">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-bold">친구 목록</h2>
+    <div className="flex h-full flex-col px-[3.5%] py-[3%]">
+      {/* ── 상단 미니탭 ── */}
+      <div className="relative flex-none">
+        {showFinder ? (
+          <>
+            <img src="/assets/ui/FriendCatalog.png" alt="" className="block w-full select-none" draggable={false} />
+            <span className="absolute inset-0 flex items-center justify-center font-galmuri9 text-[10px] font-bold text-ink">
+              친구 추가
+            </span>
+          </>
+        ) : (
+          <img
+            src="/assets/ui/FriendCatalog.png"
+            alt="친구 목록"
+            className="block w-full select-none"
+            draggable={false}
+          />
+        )}
       </div>
 
-      {/* 친구 목록 — 기본 화면 */}
-      {friends.length === 0 ? (
-        <p className="mt-8 text-center text-sm text-gray-400">
-          아직 친구가 없어요. 아래 친구 찾기에서 닉네임으로 검색해보세요.
-        </p>
-      ) : (
-        <div className="flex flex-col gap-2">
-          {friends.map((f) => (
-            <button key={f.relationId}
-              onClick={async () => {
-                const d = await getProfileFull(f.id)
-                setViewing({ relationId: f.relationId, ...d })
-              }}
-              className="flex items-center gap-3 rounded-xl border p-3 text-left">
-              <div className="h-10 w-10 flex-none rounded-full bg-gray-100" />
-              <div className="min-w-0">
-                <p className="font-bold">{label(f)}</p>
-                <p className="line-clamp-1 text-xs text-gray-400">
-                  {f.bio || '한 줄 소개가 없어요'}
-                </p>
-              </div>
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* 하단 친구 찾기 버튼 */}
-      <button onClick={() => setShowFinder(true)}
-              className="relative mt-4 w-full rounded-xl bg-lime-400 py-3 font-bold">
-        친구 찾기
-        {requests.length > 0 && (
-          <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-red-400 px-1 text-[11px] text-white">
-            {requests.length}
-          </span>
-        )}
-      </button>
-
-      {/* 친구 찾기 / 친구 요청 모달 */}
-      {showFinder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-             onClick={closeFinder}>
-          <div className="max-h-[80vh] w-full max-w-sm overflow-y-auto rounded-2xl bg-white p-4"
-               onClick={(e) => e.stopPropagation()}>
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className="font-bold">친구 찾기</h3>
-              <button onClick={closeFinder} className="px-2 text-gray-400">✕</button>
+      {/* ── 본문 (스크롤 영역) ── */}
+      <div className="no-scrollbar mt-[-8%] flex-1 overflow-y-auto rounded-[6px] border-2 border-border bg-surface px-[3%] pb-[3%] pt-[10%]">
+        {!showFinder ? (
+          /* 친구 목록 */
+          friends.length === 0 ? (
+            <p className="mt-8 text-center font-galmuri11 text-[10px] text-ink-dim">
+              아직 친구가 없어요.<br />아래 친구 추가에서 닉네임으로 검색해보세요.
+            </p>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {friends.map((f) => (
+                <button
+                  key={f.relationId}
+                  onClick={async () => {
+                    const d = await getProfileFull(f.id)
+                    setViewing({ relationId: f.relationId, ...d })
+                  }}
+                  className="flex w-full items-center gap-3 rounded-[6px] bg-surface-2 p-2 text-left"
+                >
+                  {/* 친구 프로필 이미지 — 기본 이미지로 표시 중 */}
+                  <img
+                    src="/assets/char/Portrait.png"
+                    alt=""
+                    className="h-12 w-12 flex-none rounded-full border-2 border-border bg-white object-cover"
+                    draggable={false}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-galmuri9 text-[12px] font-bold text-ink">{label(f)}</p>
+                    <p className="mt-1 truncate rounded-[4px] bg-white px-2 py-1 font-galmuri11 text-[10px] text-ink-dim">
+                      {f.bio || '한 줄 소개가 없어요'}
+                    </p>
+                  </div>
+                </button>
+              ))}
             </div>
-
-            <div className="mb-4 flex border-b">
+          )
+        ) : (
+          /* 친구 추가 (찾기 / 요청) */
+          <div>
+            {/* 탭 2종 — 에셋 나오면 이 두 버튼을 <img>로 교체 */}
+            <div className="mb-3 flex gap-1">
               {[['search', '친구 찾기'], ['requests', `친구 요청${requests.length ? ` (${requests.length})` : ''}`]].map(([key, name]) => (
-                <button key={key} onClick={() => setFinderTab(key)}
-                  className={`flex-1 pb-2 text-sm ${
-                    finderTab === key ? 'border-b-2 border-green-400 font-bold' : 'text-gray-400'
-                  }`}>
+                <button
+                  key={key}
+                  onClick={() => setFinderTab(key)}
+                  className={`flex-1 rounded-t-[8px] border-2 border-b-0 py-1.5 font-galmuri9 text-[10px] font-bold ${
+                    finderTab === key
+                      ? 'border-line bg-accent text-accent-ink'
+                      : 'border-border bg-surface-2 text-ink-dim'
+                  }`}
+                >
                   {name}
                 </button>
               ))}
@@ -165,83 +179,135 @@ export default function FriendsPage() {
 
             {finderTab === 'search' ? (
               <div>
-                <div className="flex gap-2">
+                {/* 검색창 — 에셋 나오면 배경 이미지로 교체 */}
+                <div className="flex items-center gap-2 rounded-full border-2 border-border bg-surface-2 px-3 py-1">
                   <input
                     value={keyword}
                     onChange={(e) => setKeyword(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                     placeholder="친구 닉네임 입력"
-                    className="flex-1 rounded border p-2"
+                    className="min-w-0 flex-1 bg-transparent font-galmuri11 outline-none placeholder:text-ink-dim"
                   />
-                  <button onClick={handleSearch} disabled={busy}
-                          className="rounded bg-gray-200 px-4 disabled:opacity-50">
-                    검색
+                  <button onClick={handleSearch} disabled={busy} aria-label="검색"
+                          className="btn-icon flex-none px-1 text-[13px] disabled:opacity-50">
+                    🔍
                   </button>
                 </div>
 
                 {searchResult === 'none' && (
-                  <p className="mt-3 text-sm text-gray-400">
+                  <p className="mt-4 text-center font-galmuri11 text-[10px] text-ink-dim">
                     해당 닉네임의 사용자를 찾을 수 없습니다.
                   </p>
                 )}
 
-                {searchResult && searchResult !== 'none' && (
-                  <div className="mt-3 flex items-center justify-between rounded-xl border p-3">
-                    <span className="font-bold">{label(searchResult)}</span>
-                    <button onClick={handleSendRequest} disabled={busy}
-                            className="rounded bg-green-400 px-3 py-1 text-sm font-bold disabled:opacity-50">
-                      친구 신청
-                    </button>
+              {searchResult && searchResult !== 'none' && (
+                <>
+                  <div className="mt-3 flex items-center gap-3 rounded-[6px] bg-surface-2 p-2">
+                    <img src="/assets/char/Portrait.png" alt=""
+                        className="h-12 w-12 flex-none rounded-full border-2 border-border bg-white object-cover"
+                        draggable={false} />
+                    <span className="truncate font-galmuri9 text-[12px] font-bold text-ink">
+                      {label(searchResult)}
+                    </span>
                   </div>
-                )}
+                  {/* 친구 신청 버튼 — 에셋 나오면 <img>로 교체 */}
+                  <button
+                    onClick={handleSendRequest}
+                    disabled={busy}
+                    className="mx-auto mt-3 block rounded-full border-2 border-line bg-accent px-5 py-1.5 font-galmuri9 text-[11px] font-bold text-accent-ink disabled:opacity-50"
+                  >
+                    친구 신청
+                  </button>
+                </>
+              )}
               </div>
             ) : (
               requests.length === 0 ? (
-                <p className="mt-8 text-center text-sm text-gray-400">받은 요청이 없습니다.</p>
+                <p className="mt-8 text-center font-galmuri11 text-[10px] text-ink-dim">
+                  받은 요청이 없습니다.
+                </p>
               ) : (
-                <div className="flex flex-col gap-2">
-                  {requests.map((req) => (
-                    <div key={req.id}
-                         className="flex items-center justify-between rounded-xl border p-3">
-                      <span className="font-bold">{label(req.requester)}</span>
-                      <button onClick={() => handleAccept(req.id)} disabled={busy}
-                              className="rounded bg-green-400 px-3 py-1 text-sm font-bold disabled:opacity-50">
-                        수락
-                      </button>
-                    </div>
-                  ))}
+            <div className="flex flex-col gap-2">
+              {requests.map((req) => (
+                <div key={req.id} className="flex items-center gap-3 rounded-[6px] bg-surface-2 p-2">
+                  <img src="/assets/char/Portrait.png" alt=""
+                      className="h-12 w-12 flex-none rounded-full border-2 border-border bg-white object-cover"
+                      draggable={false} />
+                  <span className="min-w-0 flex-1 truncate font-galmuri9 text-[12px] font-bold text-ink">
+                    {label(req.requester)}
+                  </span>
+                  <button onClick={() => handleAccept(req.id)} disabled={busy}
+                          className="flex-none rounded-full border-2 border-line bg-accent px-3 py-1.5 font-galmuri9 text-[11px] font-bold text-accent-ink disabled:opacity-50">
+                    수락
+                  </button>
                 </div>
+              ))}
+            </div>
               )
             )}
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
-      {/* 친구 상세 모달 */}
+      {/* ── 하단 버튼 ── */}
+      <div className="mt-[3%] flex flex-none items-center justify-between">
+        <button
+          onClick={() => (showFinder ? closeFinder() : navigate('/'))}
+          aria-label={showFinder ? '친구 목록으로' : '홈으로'}
+          className="w-[13%]"
+        >
+          <img src="/assets/ui/Back.png" alt="" className="block w-full select-none" draggable={false} />
+        </button>
+
+      {!showFinder && (
+        <button
+          onClick={() => setShowFinder(true)}
+          className="relative w-[20%] min-w-[110px] flex-none"
+        >
+          <img
+            src="/assets/ui/FriendAdd.png"
+            alt="친구 추가"
+            className="block h-auto w-full select-none"
+            draggable={false}
+          />
+          {requests.length > 0 && (
+            <span className="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full border border-line bg-accent-2 px-1 font-galmuri9 text-[8px] text-white">
+              {requests.length}
+            </span>
+          )}
+        </button>
+      )}
+      </div>
+
+      {/* ── 친구 상세 모달 ── */}
       {viewing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-6"
              onClick={() => setViewing(null)}>
-          <div className="max-h-[80vh] w-full max-w-sm overflow-y-auto rounded-2xl bg-gray-50 p-4"
+          <div className="max-h-[80dvh] w-full max-w-[360px] overflow-hidden rounded-[10px] border-2 border-line bg-surface shadow-[4px_4px_0_rgba(0,0,0,0.35)]"
                onClick={(e) => e.stopPropagation()}>
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className="font-bold">
+            <div className="flex items-center gap-2 border-b-2 border-line bg-accent px-3 py-1">
+              <span className="flex-1 truncate font-galmuri9 text-[11px] font-bold text-accent-ink">
                 {viewing.profile.nickname ?? viewing.profile.full_name}
-              </h3>
-              <button onClick={() => setViewing(null)} className="px-2 text-gray-400">✕</button>
+              </span>
+              <button onClick={() => setViewing(null)} aria-label="닫기"
+                      className="btn-icon flex h-5 w-5 items-center justify-center rounded-sm border border-accent-ink bg-surface font-galmuri9 text-[9px] leading-none text-accent-ink">
+                ✕
+              </button>
             </div>
 
-            <ProfileCard {...viewing} />
-
-            <button
-              onClick={async () => {
-                if (!confirm('친구를 삭제할까요?')) return
-                await removeFriend(viewing.relationId)
-                setViewing(null)
-                await refresh()
-              }}
-              className="mt-3 w-full rounded-xl bg-red-100 py-2 text-sm font-bold text-red-500">
-              친구 삭제
-            </button>
+            <div className="max-h-[60dvh] overflow-y-auto p-3">
+              <ProfileCard {...viewing} />
+              <button
+                onClick={async () => {
+                  if (!confirm('친구를 삭제할까요?')) return
+                  await removeFriend(viewing.relationId)
+                  setViewing(null)
+                  await refresh()
+                }}
+                className="mt-3 w-full rounded-full border-2 border-accent-2 bg-white py-2 font-galmuri9 text-[10px] font-bold text-accent-2">
+                친구 삭제
+              </button>
+            </div>
           </div>
         </div>
       )}
