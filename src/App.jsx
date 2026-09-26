@@ -18,15 +18,22 @@ import CustomizePage from './pages/CustomizePage'
 
 /** 앱 셸 — 세로 플렉스. 본문만 스크롤되고 탭바는 항상 바닥에.
  *  0단계: 본문을 "Dotre Lab" 레트로 창 프레임(RetroWindow)으로 감싼다.
- *  타이틀바/메뉴탭은 장식용이며 실제 이동은 여전히 하단 TabBar가 담당한다. */
-function Shell({ withTabBar = true }) {
+ *  타이틀바/메뉴탭은 장식용이며 실제 이동은 여전히 하단 TabBar가 담당한다.
+ *  withWindow=false인 페이지(교환·평가)는 창 프레임 없이 본문만 그린다. */
+function Shell({ withTabBar = true, withWindow = true }) {
   return (
     <div className="shell">
-      <RetroWindow>
+      {withWindow ? (
+        <RetroWindow>
+          <main className="shell-main">
+            <Outlet />
+          </main>
+        </RetroWindow>
+      ) : (
         <main className="shell-main">
           <Outlet />
         </main>
-      </RetroWindow>
+      )}
       {withTabBar ? (
         <TabBar />
       ) : (
@@ -38,11 +45,20 @@ function Shell({ withTabBar = true }) {
 }
 
 
-/** 로그인 필요 + 탭바 있음 */
+/** 로그인 필요 + 탭바 있음 + 레트로윈도우 있음 */
 function TabLayout() {
   return (
     <ProtectedRoute>
       <Shell />
+    </ProtectedRoute>
+  )
+}
+
+/** 로그인 필요 + 탭바 있음 + 레트로윈도우 없음 (교환·평가) */
+function TabLayoutNoWindow() {
+  return (
+    <ProtectedRoute>
+      <Shell withWindow={false} />
     </ProtectedRoute>
   )
 }
@@ -65,15 +81,19 @@ export default function App() {
           <Route path="/login" element={<LoginPage />} />
         </Route>
 
-        {/* 탭바 있는 주요 화면 */}
+        {/* 탭바 있는 주요 화면 (레트로윈도우 O) */}
         <Route element={<TabLayout />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/calendar" element={<CalendarPage />} />
           <Route path="/friends" element={<FriendsPage />} />
-          <Route path="/weekly" element={<WeeklyPage />} />
-          <Route path="/trade" element={<TradePage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/settings" element={<SettingsPage />} />
+        </Route>
+
+        {/* 탭바 있는 화면 (레트로윈도우 X) */}
+        <Route element={<TabLayoutNoWindow />}>
+          <Route path="/weekly" element={<WeeklyPage />} />
+          <Route path="/trade" element={<TradePage />} />
         </Route>
 
         {/* 탭바 없는 화면 */}

@@ -77,11 +77,11 @@ body {
   overflow: hidden;
 
 
-  background-color: #0D0D1A;
+background-color: #0D0D1A;
   background-image: url('/assets/ui/bg-space.png');
-  background-size: 450px auto;      /* 셸 폭에 맞춤 — 도트 배율 고정 */
-  background-position: top center;
-  background-repeat: repeat-y;      /* 세로로 반복 */
+  background-size: 450px auto;
+  background-position: bottom center;   /* top center → bottom center */
+  background-repeat: no-repeat;         /* repeat-y → no-repeat */
   image-rendering: pixelated;
 }
 
