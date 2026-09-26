@@ -243,14 +243,21 @@ export default function FriendsPage() {
                           {label(searchResult)}
                         </span>
                       </div>
-                      {/* 친구 신청 버튼 — 에셋 나오면 <img>로 교체 */}
+                    {/* 친구 신청 버튼 */}
+                    <div className="mt-3 flex justify-center">
                       <button
                         onClick={handleSendRequest}
                         disabled={busy}
-                        className="mx-auto mt-3 block rounded-full border-2 border-line bg-accent px-5 py-1.5 font-galmuri9 text-[11px] font-bold text-accent-ink disabled:opacity-50"
+                        className="btn-icon w-[22%] min-w-[80px] disabled:opacity-50"
                       >
-                        친구 신청
+                        <img
+                          src="/assets/ui/FriendApplication.png"
+                          alt="친구 신청"
+                          className="block h-auto w-full select-none"
+                          draggable={false}
+                        />
                       </button>
+                    </div>
                     </>
                   )}
                 </div>

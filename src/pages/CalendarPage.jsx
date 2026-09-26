@@ -64,171 +64,219 @@ export default function CalendarPage() {
     setCursor(new Date(cursor.getFullYear(), cursor.getMonth() + delta, 1))
   }
 
-  if (loading) return <div className="p-4">불러오는 중...</div>
+  if (loading) {
+    return (
+      <div className="flex h-full items-center justify-center font-galmuri11 text-[11px] text-ink-dim">
+        불러오는 중...
+      </div>
+    )
+  }
 
   const todayKey = toKey(new Date())
   const pickedItems = picked ? byDate[picked] || [] : []
 
   return (
-    <div className="p-4">
-      {/* 탭 */}
-      <div className="mb-3 flex gap-2">
-        {[['mine', '내 기록'], ['received', '받은 아이템']].map(([key, label]) => (
-          <button key={key} onClick={() => { setTab(key); setPicked(null) }}
-            className={`rounded px-3 py-1 text-sm ${
-              tab === key ? 'bg-green-400 font-bold' : 'bg-gray-100 text-gray-500'
-            }`}>
-            {label}
-          </button>
-        ))}
-      </div>
+    <div className="flex h-full flex-col px-[3.5%] py-[3%]">
+      {/* ── 달력 전체 박스 (헤더 + 달력) ── */}
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[6px] border-2 border-border bg-surface">
 
-      {/* 월 이동 */}
-      <div className="mb-2 flex items-center justify-between">
-        <button onClick={() => moveMonth(-1)} className="px-3 py-1 text-lg">‹</button>
-        <span className="font-bold">
-          {cursor.getFullYear()}. {cursor.getMonth() + 1}
-        </span>
-        <button onClick={() => moveMonth(1)} className="px-3 py-1 text-lg">›</button>
-      </div>
-
-      {/* 요일 */}
-      <div className="grid grid-cols-7 text-center text-xs text-gray-400">
-        {WEEKDAYS.map((w, i) => (
-          <div key={i} className={i === 0 ? 'text-red-400' : ''}>{w}</div>
-        ))}
-      </div>
-
-      {/* 날짜 격자 */}
-      <div className="grid grid-cols-7 gap-1">
-        {cells.map((date, i) => {
-          if (!date) return <div key={i} />
-          const key = toKey(date)
-          const dayItems = byDate[key] || []
-          const isToday = key === todayKey
-          const isPicked = key === picked
-
-          return (
-            <button key={i}
-              onClick={() => setPicked(dayItems.length ? key : null)}
-              className={`flex h-16 flex-col items-center justify-start overflow-hidden rounded p-0.5
-                ${isPicked ? 'ring-2 ring-green-400' : ''}
-                ${dayItems.length ? '' : 'opacity-50'}`}>
-               <span className={`text-[10px] leading-none ${isToday ? 'font-bold text-green-600' : 'text-gray-400'}`}>
-                {date.getDate()}
-              </span>
-              {dayItems[0] && (
-                <div className="relative min-h-0 w-full flex-1">
-                  <img src={dayItems[0].image_url} alt=""
-                       className="pixel h-full w-full object-contain" />
-                  {dayItems.length > 1 && (
-                    <span className="absolute bottom-0 right-0 rounded-full bg-gray-700 px-1 text-[8px] text-white">
-                      +{dayItems.length - 1}
-                    </span>
-                  )}
-                </div>
-              )}
-              
+        {/* 연·월 이동 헤더 */}
+          <div
+            className="flex flex-none items-center justify-between border-b-2 border-border px-[4%] py-[4%]"
+            style={{ backgroundColor: '#C4EC5F' }}
+          >
+            <button onClick={() => moveMonth(-1)} aria-label="이전 달"
+                    className="btn-icon px-1 text-[18px] leading-none text-accent-2">
+              ◀
             </button>
-          )
-        })}
+            <span className="font-galmuri9 text-[28px] [text-shadow:_-1.5px_0_white,_0_1.5px_white,_1.5px_0_white,_0_-1.5px_white] font-regular leading-none text-ink">
+              {cursor.getFullYear()}. {cursor.getMonth() + 1}
+            </span>
+            <button onClick={() => moveMonth(1)} aria-label="다음 달"
+                    className="btn-icon px-1 text-[18px] leading-none text-accent-2">
+              ▶
+            </button>
+          </div>
+
+        {/* 내 기록 / 받은 아이템 토글 */}
+                <div className="relative mx-auto mt-[3%] w-[60%] flex-none">
+                  <img
+                    src={tab === 'mine'
+                      ? '/assets/ui/CalendarMy.png'
+                      : '/assets/ui/CalendarFriend.png'}
+                    alt={tab === 'mine' ? '내 기록' : '받은 아이템'}
+                    className="block w-full select-none"
+                    draggable={false}
+                  />
+
+                  {/* 왼쪽 절반 = 내 기록, 오른쪽 절반 = 받은 아이템 */}
+                  <button
+                    onClick={() => { setTab('mine'); setPicked(null) }}
+                    aria-label="내 기록"
+                    className="btn-icon absolute inset-y-0 left-0 w-1/2"
+                  />
+                  <button
+                    onClick={() => { setTab('received'); setPicked(null) }}
+                    aria-label="받은 아이템"
+                    className="btn-icon absolute inset-y-0 right-0 w-1/2"
+                  />
+                </div>
+
+        {/* 요일 + 날짜 격자 + 상세 (스크롤 영역) */}
+        <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto px-[3%] pb-[3%] pt-[3%]">
+          {/* 요일 */}
+          <div className="grid grid-cols-7 text-center font-galmuri9 text-[10px] text-ink-dim">
+            {WEEKDAYS.map((w, i) => (
+              <div key={i} className={i === 0 ? 'text-accent-2' : ''}>{w}</div>
+            ))}
+          </div>
+
+          {/* 날짜 격자 */}
+          <div className="mt-1 grid grid-cols-7 gap-1">
+            {cells.map((date, i) => {
+              if (!date) return <div key={i} className="h-16" />
+              const key = toKey(date)
+              const dayItems = byDate[key] || []
+              const isToday = key === todayKey
+              const isPicked = key === picked
+
+              return (
+                <button
+                  key={i}
+                  onClick={() => setPicked(dayItems.length ? key : null)}
+                  className={`btn-icon flex h-16 flex-col items-center justify-start overflow-hidden rounded-[4px] p-0.5 ${
+                    isPicked ? 'bg-accent/30' : ''
+                  } ${dayItems.length ? '' : 'opacity-60'}`}
+                >
+                  <span className={`font-galmuri9 text-[9px] leading-none ${
+                    isToday ? 'font-bold text-accent-2' : 'text-ink-dim'
+                  }`}>
+                    {date.getDate()}
+                  </span>
+
+                  {dayItems[0] && (
+                    <div className="relative mt-0.5 min-h-0 w-full flex-1">
+                      <img src={dayItems[0].image_url} alt=""
+                           className="pixel h-full w-full object-contain" />
+                      {dayItems.length > 1 && (
+                        <span className="absolute bottom-0 right-0 rounded-full bg-ink px-1 font-galmuri9 text-[7px] leading-tight text-white">
+                          +{dayItems.length - 1}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </button>
+              )
+            })}
+          </div>
+
+          {/* 선택한 날 상세 */}
+          {pickedItems.length > 0 && (
+            <div className="mt-[3%] rounded-[6px] border-2 border-border bg-surface-2 p-[3%]">
+              <p className="mb-2 font-galmuri11 text-[10px] text-ink-dim">{picked}</p>
+
+              {pickedItems.map((it) => {
+                const rarity = RARITY_TABLE[it.rarity] || RARITY_TABLE.normal
+                return (
+                  <div key={it.id} className="mb-3 flex gap-2 last:mb-0">
+                    <button onClick={() => setDetail(it)} className="btn-icon flex-none">
+                      <img src={it.image_url} alt={it.name}
+                           className="pixel h-16 w-16 rounded-[4px] border-2 border-border"
+                           style={{ backgroundColor: rarity.color + '22' }} />
+                    </button>
+
+                    <div className="min-w-0 flex-1 rounded-[4px] bg-white p-2">
+                      {tab === 'mine' ? (
+                        <p className="whitespace-pre-wrap font-galmuri11 text-[10px] text-ink">
+                          {it.diaries?.content || '작성된 일기가 없어요'}
+                        </p>
+                      ) : (
+                        <>
+                          <p className="font-galmuri11 text-[9px] text-ink-dim">보낸 사람</p>
+                          <p className="mt-0.5 font-galmuri9 text-[11px] font-bold text-ink">
+                            {it.sender?.nickname ?? it.sender?.full_name ?? '알 수 없음'}
+                          </p>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+
+          {Object.keys(byDate).length === 0 && (
+            <p className="mt-6 text-center font-galmuri11 text-[10px] text-ink-dim">
+              {tab === 'mine'
+                ? '아직 기록된 아이템이 없어요. 일기를 작성해보세요!'
+                : '아직 받은 아이템이 없어요.'}
+            </p>
+          )}
+        </div>
       </div>
 
-      {/* 선택한 날 상세 */}
-            {pickedItems.length > 0 && (
-        <div className="mt-4 rounded-xl bg-gray-50 p-4">
-          <p className="mb-2 text-sm text-gray-400">{picked}</p>
-
-          {pickedItems.map((it) => {
-            const rarity = RARITY_TABLE[it.rarity] || RARITY_TABLE.normal
-            return (
-              <div key={it.id} className="mb-4 flex gap-3 last:mb-0">
-                <button onClick={() => setDetail(it)} className="flex-none">
-                  <img src={it.image_url} alt={it.name}
-                       className="pixel h-20 w-20 rounded-lg"
-                       style={{ backgroundColor: rarity.color + '22' }} />
-                </button>
-
-                <div className="min-w-0 flex-1 rounded-lg bg-white p-3">
-                  {tab === 'mine' ? (
-                    <p className="whitespace-pre-wrap text-sm">
-                      {it.diaries?.content || '작성된 일기가 없어요'}
-                    </p>
-                  ) : (
-                    <>
-                      <p className="text-xs text-gray-400">보낸 사람</p>
-                      <p className="text-sm font-bold">
-                        {it.sender?.nickname ?? it.sender?.full_name ?? '알 수 없음'}
-                      </p>
-                    </>
-                  )}
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      )}
-
-      {Object.keys(byDate).length === 0 && (
-        <p className="mt-6 text-center text-sm text-gray-400">
-          {tab === 'mine'
-            ? '아직 기록된 아이템이 없어요. 일기를 작성해보세요!'
-            : '아직 받은 아이템이 없어요.'}
-        </p>
-      )}
-          {detail && (() => {
+      {/* ── 아이템 상세 모달 ── */}
+      {detail && (() => {
         const rarity = RARITY_TABLE[detail.rarity] || RARITY_TABLE.normal
         return (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-6"
                onClick={() => setDetail(null)}>
-            <div className="max-h-[80vh] w-full max-w-xs overflow-y-auto rounded-2xl bg-white p-5"
+            <div className="max-h-[80dvh] w-full max-w-[360px] overflow-hidden rounded-[10px] border-2 border-line bg-surface shadow-[4px_4px_0_rgba(0,0,0,0.35)]"
                  onClick={(e) => e.stopPropagation()}>
-              <div className="flex flex-col items-center">
-                <img src={detail.image_url} alt={detail.name}
-                     className="pixel h-32 w-32 rounded-xl"
-                     style={{ backgroundColor: rarity.color + '22' }} />
-                <span className="mt-2 rounded-full px-3 py-0.5 text-xs font-bold text-white"
-                      style={{ backgroundColor: rarity.color }}>
-                  {rarity.label}
+              <div className="flex items-center gap-2 border-b-2 border-line bg-accent px-3 py-1">
+                <span className="flex-1 truncate font-galmuri9 text-[11px] font-bold text-accent-ink">
+                  {detail.name}
                 </span>
-                <h4 className="mt-2 text-lg font-bold">{detail.name}</h4>
-                <p className="mt-1 text-center text-sm text-gray-500">{detail.description}</p>
+                <button onClick={() => setDetail(null)} aria-label="닫기"
+                        className="btn-icon flex h-5 w-5 items-center justify-center rounded-sm border border-accent-ink bg-surface font-galmuri9 text-[9px] leading-none text-accent-ink">
+                  ✕
+                </button>
               </div>
 
-              {detail.sender && (
-                <div className="mt-3 rounded-xl bg-lime-50 p-3 text-center">
-                  <p className="text-xs text-gray-400">보낸 사람</p>
-                  <p className="font-bold">
-                    {detail.sender.nickname ?? detail.sender.full_name}
+              <div className="max-h-[60dvh] overflow-y-auto p-3">
+                <div className="flex flex-col items-center">
+                  <img src={detail.image_url} alt={detail.name}
+                       className="pixel h-28 w-28 rounded-[6px] border-2 border-border"
+                       style={{ backgroundColor: rarity.color + '22' }} />
+                  <span className="mt-2 rounded-full border-2 border-line px-3 py-0.5 font-galmuri9 text-[9px] font-bold text-white"
+                        style={{ backgroundColor: rarity.color }}>
+                    {rarity.label}
+                  </span>
+                  <p className="mt-2 whitespace-pre-line text-center font-galmuri11 text-[10px] text-ink-dim">
+                    {detail.description}
                   </p>
                 </div>
-              )}
 
-              <div className="mt-4 rounded-xl bg-gray-50 p-3">
-                {STAT_KEYS.map((k) => (
-                  <div key={k} className="mb-2 flex items-center gap-2 last:mb-0">
-                    <span className="w-14 text-xs">
-                      {STAT_LABELS[k].icon} {STAT_LABELS[k].ko}
-                    </span>
-                    <div className="h-2 flex-1 rounded-full bg-gray-200">
-                      <div className="h-2 rounded-full"
-                           style={{ width: `${statPercent(detail.stats?.[k] ?? 0)}%`,
-                                    backgroundColor: STAT_LABELS[k].color }} />
-                    </div>
-                    <span className="w-7 text-right text-xs font-bold">
-                      {detail.stats?.[k] ?? 0}
-                    </span>
+                {detail.sender && (
+                  <div className="mt-3 rounded-[6px] border-2 border-border bg-surface-2 p-2 text-center">
+                    <p className="font-galmuri11 text-[9px] text-ink-dim">보낸 사람</p>
+                    <p className="mt-0.5 font-galmuri9 text-[11px] font-bold text-ink">
+                      {detail.sender.nickname ?? detail.sender.full_name}
+                    </p>
                   </div>
-                ))}
-                <p className="mt-1 text-right text-[11px] text-gray-400">
-                  아이템 종합치 {detail.power}
-                </p>
-              </div>
+                )}
 
-              <button onClick={() => setDetail(null)}
-                      className="mt-4 w-full rounded-xl bg-gray-200 py-2 font-bold">
-                닫기
-              </button>
+                <div className="mt-3 rounded-[6px] border-2 border-border bg-surface-2 p-2">
+                  {STAT_KEYS.map((k) => (
+                    <div key={k} className="mb-2 flex items-center gap-2 last:mb-0">
+                      <span className="w-14 font-galmuri11 text-[9px] text-ink">
+                        {STAT_LABELS[k].icon} {STAT_LABELS[k].ko}
+                      </span>
+                      <div className="h-2 flex-1 rounded-full border border-border bg-white">
+                        <div className="h-full rounded-full"
+                             style={{ width: `${statPercent(detail.stats?.[k] ?? 0)}%`,
+                                      backgroundColor: STAT_LABELS[k].color }} />
+                      </div>
+                      <span className="w-7 text-right font-galmuri9 text-[9px] font-bold text-ink">
+                        {detail.stats?.[k] ?? 0}
+                      </span>
+                    </div>
+                  ))}
+                  <p className="mt-1 text-right font-galmuri11 text-[9px] text-ink-dim">
+                    아이템 종합치 {detail.power}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         )
