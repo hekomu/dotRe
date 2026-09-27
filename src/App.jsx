@@ -22,7 +22,7 @@ import CustomizePage from './pages/CustomizePage'
  *  withWindow=false인 페이지(교환·평가)는 창 프레임 없이 본문만 그린다. */
 function Shell({ withTabBar = true, withWindow = true }) {
   return (
-    <div className="shell">
+    <div className={`shell${withWindow ? '' : ' shell-plain'}`}>
       {withWindow ? (
         <RetroWindow>
           <main className="shell-main">

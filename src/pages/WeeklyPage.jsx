@@ -5,17 +5,18 @@ import { GRADE_TABLE } from '../game/weekly'
 
 const gradeColor = (g) => GRADE_TABLE.find((x) => x.grade === g)?.color ?? '#9ca3af'
 
-/** 단상 하나 — 아이템이 없으면 빈 받침만 */
+/** 단상 하나 — 아이템이 없으면 빈 받침만
+ *  ※ 단상 에셋 나오면 아래 받침 <div>를 <img src="/assets/ui/Pedestal.png">로 교체 */
 function Pedestal({ item }) {
   return (
-    <div className="flex flex-col items-center">
-      <div className="flex h-14 w-14 items-end justify-center">
+    <div className="flex w-[22%] flex-none flex-col items-center">
+      <div className="flex aspect-square w-full items-end justify-center">
         {item && (
           <img src={item.image_url} alt={item.name}
-               className="pixel max-h-14 max-w-14 object-contain" />
+               className="pixel max-h-full max-w-full object-contain" />
         )}
       </div>
-      <div className="h-4 w-14 rounded-[50%] bg-lime-400 shadow-inner" />
+      <div className="h-[14px] w-full rounded-[50%] border-2 border-accent-ink bg-accent" />
     </div>
   )
 }
@@ -43,91 +44,151 @@ export default function WeeklyPage() {
     }
   }
 
-  if (error) return <div className="p-4 text-sm text-gray-500">{error}</div>
-  if (!data) return <div className="p-4 text-gray-400">불러오는 중...</div>
+  if (error) {
+    return (
+      <div className="flex h-full items-center justify-center px-6 text-center font-galmuri11 text-[11px] text-white">
+        {error}
+      </div>
+    )
+  }
+  if (!data) {
+    return (
+      <div className="flex h-full items-center justify-center font-galmuri11 text-[11px] text-white">
+        불러오는 중...
+      </div>
+    )
+  }
 
   const current = data.weeks.find((w) => w.isCurrent)
-  if (!current) return <div className="p-4">평가 정보를 불러오지 못했습니다</div>
+  if (!current) {
+    return (
+      <div className="flex h-full items-center justify-center px-6 text-center font-galmuri11 text-[11px] text-white">
+        평가 정보를 불러오지 못했습니다
+      </div>
+    )
+  }
 
   // 단상 7칸 — 위 4개, 아래 3개
   const slots = Array.from({ length: 7 }, (_, i) => current.items[i] ?? null)
 
   return (
-    <div className="relative flex min-h-full flex-col items-center p-4">
-      {/* 너트 */}
-      <div className="absolute right-4 top-4 rounded-full bg-yellow-100 px-3 py-1 text-sm font-bold">
-        🥜 {data.nuts}
+    <div className="flex h-full flex-col px-[4%] py-[3%]">
+
+      {/* ── 상단 줄: 너트 / 도움말 ── */}
+      <div className="flex flex-none items-start justify-between">
+        <span className="rounded-full border-2 border-line bg-surface px-3 py-1 font-galmuri9 text-[10px] font-bold text-ink">
+          🥜 {data.nuts}
+        </span>
+        {/* 도움말 버튼 — 주간평가용 모달 만들면 onClick 연결 */}
+        <button aria-label="도움말" className="btn-icon w-[10%]">
+          <img src="/assets/ui/Support.png" alt="" className="block w-full select-none" draggable={false} />
+        </button>
       </div>
 
-      <h2 className="mt-8 text-2xl font-black text-pink-500">주간 평가</h2>
+      {/* ── 제목 ── */}
+      <h2 className="mt-[10%] flex-none text-center font-galmuri9 text-[20px] font-bold text-accent-2 [text-shadow:_-1.5px_0_white,_0_1.5px_white,_1.5px_0_white,_0_-1.5px_white]">
+        주간 평가
+      </h2>
 
-      {/* 박사 + 말풍선 */}
-      <div className="mt-6 flex w-full items-start gap-2">
-        <div className="h-24 w-20 flex-none rounded-xl bg-gray-100" />
-        <div className="relative flex-1 rounded-xl bg-gray-100 p-3 text-sm">
-          이번 주 주간평가<br />보너스 아이템은...<br />
-          <b className="text-lg text-pink-500">{current.bonusLabel}</b> 라네..
+      {/* ── 마스코트 + 말풍선 ── */}
+      <div className="mt-[3%] flex flex-none items-start">
+        <img src="/assets/char/hakase_test.png" alt=""
+             className="pixel w-[30%] flex-none select-none" draggable={false} />
+
+        <div className="relative mt-[10%] min-w-0 flex-1">
+          <img src="/assets/ui/TestBubble.png" alt=""
+               className="block w-full select-none " draggable={false} />
+          <div className="absolute inset-0 flex flex-col items-center justify-center px-[12%] text-center">
+            <p className="font-galmuri11 text-[15px] leading-relaxed text-ink">
+              이번 주 주간평가<br />보너스 아이템은...
+            </p>
+            <p className="mt-1 font-galmuri9 text-[20px] font-bold text-accent-2">
+              {current.bonusLabel}
+              <span className="ml-1 font-galmuri11 text-[15px] font-normal text-ink">(이)라네..</span>
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* 단상 7개 */}
-      <div className="mt-8 flex flex-col items-center gap-3">
-        <div className="flex gap-3">
+      {/* ── 단상 7개 (위 4 / 아래 3) ── */}
+      <div className="mt-[6%] flex flex-none flex-col items-center">
+        <div className="flex w-full justify-center gap-[2%]">
           {slots.slice(0, 4).map((it, i) => <Pedestal key={i} item={it} />)}
         </div>
-        <div className="flex gap-3">
+        <div className="-mt-[3%] flex w-full justify-center gap-[2%]">
           {slots.slice(4, 7).map((it, i) => <Pedestal key={i} item={it} />)}
         </div>
       </div>
 
-      <p className="mt-3 text-xs text-gray-400">
+      <p className="mt-[3%] flex-none text-center font-galmuri11 text-[9px] text-white">
         이번 주 아이템 {current.itemCount}개
         {current.bonusCount > 0 && ` · 보너스 +${current.bonusCount}`}
       </p>
 
-      {/* 평가 시작 */}
-      <div className="mt-6 w-full max-w-xs">
+      {/* ── 평가 시작 버튼 — 에셋 나오면 <img>로 교체 ── */}
+      <div className="mt-[4%] flex flex-none flex-col items-center">
         {current.claimed ? (
-          <div className="rounded-full bg-gray-200 py-3 text-center font-bold text-gray-400">
+          <div className="w-[70%] rounded-full border-2 border-border bg-surface-2 py-3 text-center font-galmuri9 text-[13px] font-bold text-ink-dim">
             이번 주 평가 완료
           </div>
         ) : (
-          <button onClick={handleStart} disabled={!current.claimable || busy}
-            className="w-full rounded-full bg-lime-400 py-3 text-lg font-black shadow disabled:bg-gray-200 disabled:text-gray-400">
+          <button
+            onClick={handleStart}
+            disabled={!current.claimable || busy}
+            className="w-[70%] rounded-full border-2 border-line bg-accent py-3 font-galmuri9 text-[16px] font-bold text-accent-2 shadow-[3px_3px_0_rgba(0,0,0,0.25)] disabled:border-border disabled:bg-surface-2 disabled:text-ink-dim disabled:shadow-none"
+          >
             {busy ? '평가 중...' : '평가 시작!'}
           </button>
         )}
+
         {!current.claimed && !current.isSunday && (
-          <p className="mt-2 text-center text-xs text-gray-400">
+          <p className="mt-2 text-center font-galmuri11 text-[9px] text-white">
             평가는 일요일에 열려요
           </p>
         )}
       </div>
 
-      <button onClick={() => navigate('/')}
-              className="mt-6 self-start rounded-full bg-lime-400 px-4 py-2 font-bold">
-        ←
-      </button>
+      {/* ── 뒤로가기 ── */}
+      <div className="mt-auto flex flex-none items-center pt-[3%]">
+        <button onClick={() => navigate('/')} aria-label="홈으로" className="w-[13%]">
+          <img src="/assets/ui/Back.png" alt="" className="block w-full select-none" draggable={false} />
+        </button>
+      </div>
 
-      {/* 결산 창 */}
+      {/* ── 결산 창 ── */}
       {result && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-6"
              onClick={() => setResult(null)}>
-          <div className="w-full max-w-xs rounded-2xl bg-white p-6 text-center"
+          <div className="w-full max-w-[320px] overflow-hidden rounded-[10px] border-2 border-line bg-surface shadow-[4px_4px_0_rgba(0,0,0,0.35)]"
                onClick={(e) => e.stopPropagation()}>
-            <p className="text-sm text-gray-400">이번 주 평가 결과</p>
-            <p className="my-3 text-6xl font-black"
-               style={{ color: gradeColor(result.grade) }}>
-              {result.grade}
-            </p>
-            <div className="rounded-xl bg-yellow-50 py-3 font-bold">
-              🥜 너트 {result.reward} 획득!
+            <div className="flex items-center gap-2 border-b-2 border-line bg-accent px-3 py-1">
+              <span className="flex-1 font-galmuri9 text-[11px] font-bold text-accent-ink">
+                이번 주 평가 결과
+              </span>
+              <button onClick={() => setResult(null)} aria-label="닫기"
+                      className="btn-icon flex h-5 w-5 items-center justify-center rounded-sm border border-accent-ink bg-surface font-galmuri9 text-[9px] leading-none text-accent-ink">
+                ✕
+              </button>
             </div>
-            <p className="mt-2 text-xs text-gray-400">보유 너트 {result.nuts}</p>
-            <button onClick={() => setResult(null)}
-                    className="mt-4 w-full rounded-full bg-lime-400 py-2 font-bold">
-              확인
-            </button>
+
+            <div className="p-4 text-center">
+              <p className="my-2 font-galmuri9 text-[56px] font-bold leading-none"
+                 style={{ color: gradeColor(result.grade) }}>
+                {result.grade}
+              </p>
+
+              <div className="mt-3 rounded-[6px] border-2 border-border bg-surface-2 py-3 font-galmuri9 text-[12px] font-bold text-ink">
+                🥜 너트 {result.reward} 획득!
+              </div>
+              <p className="mt-2 font-galmuri11 text-[9px] text-ink-dim">
+                보유 너트 {result.nuts}
+              </p>
+
+              <button onClick={() => setResult(null)}
+                      className="mt-4 w-full rounded-full border-2 border-line bg-accent py-2 font-galmuri9 text-[11px] font-bold text-accent-ink">
+                확인
+              </button>
+            </div>
           </div>
         </div>
       )}
