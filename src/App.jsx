@@ -17,15 +17,14 @@ import RoomEditPage from './pages/RoomEditPage'
 import CustomizePage from './pages/CustomizePage'
 
 /** 앱 셸 — 세로 플렉스. 본문만 스크롤되고 탭바는 항상 바닥에.
- *  0단계: 본문을 "Dotre Lab" 레트로 창 프레임(RetroWindow)으로 감싼다.
- *  타이틀바/메뉴탭은 장식용이며 실제 이동은 여전히 하단 TabBar가 담당한다.
- *  withWindow=false인 페이지(교환·평가)는 창 프레임 없이 본문만 그린다. */
-function Shell({ withTabBar = true, withWindow = true }) {
+ *  withWindow=false → 레트로윈도우 없이 본문만 (교환·주간평가)
+ *  windowBare=true  → 창 크기/테두리만 쓰고 타이틀바·메뉴탭은 없음 (상점) */
+function Shell({ withTabBar = true, withWindow = true, windowBare = false }) {
   return (
     <div className={`shell${withWindow ? '' : ' shell-plain'}`}>
       {withWindow ? (
-        <RetroWindow>
-          <main className="shell-main">
+        <RetroWindow bare={windowBare}>
+          <main className={`shell-main${windowBare ? ' shell-main-flush' : ''}`}>
             <Outlet />
           </main>
         </RetroWindow>
@@ -34,6 +33,7 @@ function Shell({ withTabBar = true, withWindow = true }) {
           <Outlet />
         </main>
       )}
+
       {withTabBar ? (
         <TabBar />
       ) : (
@@ -44,7 +44,6 @@ function Shell({ withTabBar = true, withWindow = true }) {
   )
 }
 
-
 /** 로그인 필요 + 탭바 있음 + 레트로윈도우 있음 */
 function TabLayout() {
   return (
@@ -54,11 +53,20 @@ function TabLayout() {
   )
 }
 
-/** 로그인 필요 + 탭바 있음 + 레트로윈도우 없음 (교환·평가) */
+/** 로그인 필요 + 탭바 있음 + 레트로윈도우 없음 (교환·주간평가) */
 function TabLayoutNoWindow() {
   return (
     <ProtectedRoute>
       <Shell withWindow={false} />
+    </ProtectedRoute>
+  )
+}
+
+/** 로그인 필요 + 탭바 없음 + 창 크기만 (상점) */
+function BareLayout() {
+  return (
+    <ProtectedRoute>
+      <Shell withTabBar={false} windowBare />
     </ProtectedRoute>
   )
 }
@@ -96,11 +104,15 @@ export default function App() {
           <Route path="/trade" element={<TradePage />} />
         </Route>
 
+        {/* 창 크기만 쓰는 화면 */}
+        <Route element={<BareLayout />}>
+          <Route path="/shop" element={<ShopPage />} />
+        </Route>
+
         {/* 탭바 없는 화면 */}
         <Route element={<FullLayout />}>
           <Route path="/write" element={<DiaryWritePage />} />
           <Route path="/item/:itemId" element={<ItemResultPage />} />
-          <Route path="/shop" element={<ShopPage />} />
           <Route path="/room" element={<RoomEditPage />} />
           <Route path="/customize" element={<CustomizePage />} />
         </Route>

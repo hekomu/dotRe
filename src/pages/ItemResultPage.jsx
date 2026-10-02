@@ -105,7 +105,7 @@ export default function ItemResultPage() {
   const rarity = RARITY_TABLE[item.rarity] || RARITY_TABLE.normal
 
   return (
-    <div className="flex flex-col px-[0%] py-[1%]">
+    <div className="flex flex-col px-[1%] py-[1%]">
       {/* ── 결과 카드 ── */}
       <div className="relative">
         <img src="/assets/ui/RW.png" alt="" className="block w-full select-none" draggable={false} />
@@ -122,7 +122,7 @@ export default function ItemResultPage() {
               draggable={false}
             />
             {/* 등급 배지 — 아이템 칸 좌상단에 걸침 */}
-            <div className="absolute -left-[14%] -top-[7%] w-[52%]">
+            <div className="absolute -left-[14%] -top-[7%] w-[56%]">
               <img src="/assets/icons/TestGrade.png" alt="" className="block w-full select-none" draggable={false} />
             </div>
           </div>
@@ -139,11 +139,11 @@ export default function ItemResultPage() {
 
           {/* 스탯 4종 — 2×2 */}
           <div className="mt-auto w-full">
-            <div className="grid grid-cols-2 gap-x-[5%] gap-y-[12%]">
+            <div className="grid grid-cols-2 gap-x-[3%] gap-y-[11%]">
               {STAT_KEYS.map((k) => (
                 <div key={k} className="relative">
-                  <img src="/assets/ui/StatBar.png" alt="" className="block w-full select-none" draggable={false} />
-                  <span className="absolute inset-0 flex items-center justify-center gap-1 font-galmuri9 text-[14px] text-ink">
+                  <img src="/assets/ui/StatBar.png" alt="" className="block w-full  select-none" draggable={false} />
+                  <span className="absolute inset-0 flex items-center justify-center gap-0 font-galmuri9 text-[14px] text-ink">
                     <span>{STAT_LABELS[k].icon}</span>
                     <span>{k.toUpperCase()} : {item.stats?.[k] ?? 0}</span>
                   </span>
