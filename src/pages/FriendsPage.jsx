@@ -133,7 +133,7 @@ export default function FriendsPage() {
                 <img
                   src="/assets/char/Portrait.png"
                   alt=""
-                  className="h-12 w-12 flex-none rounded-full border-2 border-border bg-white object-cover"
+                  className="h-12 w-12 flex-none rounded-full border-1 border-border bg-white object-cover"
                   draggable={false}
                 />
                 <div className="min-w-0 flex-1">

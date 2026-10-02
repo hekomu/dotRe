@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../lib/AuthContext'
 import { supabase } from '../lib/supabaseClient'
+import NutsBar from './NutsBar'
 
-export default function NutsBadge({ className = '' }) {
+export default function NutsBadge({ widthClass = 'w-full', textClass = 'text-[12px]' }) {
   const { session } = useAuth()
   const [nuts, setNuts] = useState(null)
 
@@ -15,11 +16,5 @@ export default function NutsBadge({ className = '' }) {
 
   if (nuts === null) return null
 
-  return (
-    <span
-      className={`inline-flex items-center gap-1 rounded-full border border-line bg-[#fdf0c8] px-3 py-1 font-galmuri9 text-[14px] font-bold text-black ${className}`}
-    >
-      <img src="/assets/icons/Nuts.png" className="h-6 w-6" /> {nuts}
-    </span>
-  )
+  return <NutsBar value={nuts} widthClass={widthClass} textClass={textClass} />
 }

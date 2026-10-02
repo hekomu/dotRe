@@ -19,7 +19,7 @@ export default function HomePage() {
   const lockWrite = hasWrittenToday && !isDevAccount(session?.user?.id)
 
   return (
-    <div className="flex flex-col gap-4 p-2">
+    <div className="flex flex-col gap-3 p-1">
       {/* 1. 프로필 카드 + 오늘 기록 카드 */}
       <div className="flex gap-[2%]">
         {/* 프로필 카드 — 클릭 시 프로필 설정으로 이동 */}
@@ -35,7 +35,7 @@ export default function HomePage() {
               <span className="truncate font-galmuri11 text-[13px] text-ink">
                 {session?.user?.user_metadata?.nickname ?? '이름'}
               </span>
-              <NutsBadge />
+              <NutsBadge widthClass="w-[70%]" textClass="text-[15px]" />
               <span className="text-right font-galmuri11 text-[9px] text-ink-dim">프로필 설정</span>
             </div>
           </button>

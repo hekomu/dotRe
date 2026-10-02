@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getWeekly, claimWeekly } from '../lib/api'
 import { GRADE_TABLE } from '../game/weekly'
+import NutsBar from '../components/NutsBar'
 
 const gradeColor = (g) => GRADE_TABLE.find((x) => x.grade === g)?.color ?? '#9ca3af'
 
@@ -74,11 +75,9 @@ export default function WeeklyPage() {
   return (
     <div className="flex h-full flex-col px-[4%] py-[3%]">
 
-      {/* ── 상단 줄: 너트 / 도움말 ── */}
+       {/* ── 상단 줄: 너트 / 도움말 ── */}
       <div className="flex flex-none items-start justify-between">
-        <span className="rounded-full border-2 border-line bg-surface px-3 py-1 font-galmuri9 text-[10px] font-bold text-ink">
-          🥜 {data.nuts}
-        </span>
+        <NutsBar value={data.nuts} widthClass="w-[32%]" textClass="text-[18px]" />
         {/* 도움말 버튼 — 주간평가용 모달 만들면 onClick 연결 */}
         <button aria-label="도움말" className="btn-icon w-[10%]">
           <img src="/assets/ui/Support.png" alt="" className="block w-full select-none" draggable={false} />

@@ -101,17 +101,17 @@ export default function ShopPage() {
            className="pointer-events-none absolute inset-0 h-full w-full object-cover select-none"
            draggable={false} />
 
-      <div className="relative flex h-full flex-col px-[5%] pb-[4%] pt-[5%]">
+      <div className="relative flex h-full flex-col px-[3%] pb-[4%] pt-[5%]">
 
         {/* ── 헤더: 로고 / 보유 너트 ── */}
         <div className="flex flex-none items-start justify-between">
           <img src="/assets/icons/TmShop.png" alt="상점"
-               className=" w-[36%] select-none" draggable={false} />
+               className=" -mt-[3%] w-[33%] select-none" draggable={false} />
 
-          <div className="relative w-[30%]">
+          <div className="relative w-[27%]">
             <img src="/assets/ui/NutBar.png" alt="" className="block w-full select-none" draggable={false} />
-            <div className="absolute inset-0 flex items-center justify-center gap-1">
-              <img src="/assets/icons/Nuts.png" alt="" className="h-[65%] w-auto" draggable={false} />
+            <div className="absolute inset-x-0 top-0 bottom-[10%] flex items-center justify-center gap-1">
+              <img src="/assets/icons/Nuts.png" alt="" className="h-[68%] w-auto" draggable={false} />
               <span className="font-galmuri9 text-[18px]  text-ink">{nuts}</span>
             </div>
           </div>
@@ -138,7 +138,7 @@ export default function ShopPage() {
               <div className="flex flex-none justify-center gap-[7%]">
                 {[['all', '전체'], ['mine', '내가만든'], ['friend', '교환받은']].map(([k, label]) => (
                   <button key={k} onClick={() => setFilter(k)}
-                          className={`btn-icon pb-1 font-galmuri11 text-[12px] ${
+                          className={`btn-icon pb-1 font-galmuri11 text-[13px] ${
                             filter === k
                               ? 'border-b-2 border-accent-2  text-ink'
                               : 'text-ink-dim'
@@ -177,7 +177,7 @@ export default function ShopPage() {
                                className="absolute left-[1.5%] top-[5%] w-[12%] select-none" draggable={false} />
 
                           {/* 이름 — 최대 2줄 */}
-                          <p className="absolute left-[28%] right-[13%] top-[10%] line-clamp-2 font-galmuri11 text-[11px] leading-snug text-ink">
+                          <p className="absolute left-[27%] right-[13%] top-[10%] line-clamp-2 font-galmuri11 text-[11px] leading-snug text-ink">
                             {it.name}
                           </p>
 
@@ -207,9 +207,13 @@ export default function ShopPage() {
                           {/* 가격 버튼 */}
                           <button onClick={() => setConfirmTarget({ kind: 'item', entity: it, qty: n })}
                                   disabled={!canBuy}
-                                  className="btn-icon absolute right-[2%] top-[56%] flex w-[23%] items-center justify-center gap-1 rounded-full border-2 border-accent-ink bg-accent py-1 disabled:opacity-40">
-                            <img src="/assets/icons/Nuts.png" alt="" className="h-[14px] w-[14px]" draggable={false} />
-                            <span className="font-galmuri9 text-[11px] font-bold text-ink">{it.price * n}</span>
+                                  className="btn-icon absolute right-[2%] top-[56%] w-[22%] disabled:opacity-50">
+                            <img src="/assets/ui/PriceBar.png" alt=""
+                                 className="block w-full select-none" draggable={false} />
+                            <span className="absolute inset-x-0 bottom-[8%] top-0 flex items-center justify-center gap-1">
+                              <img src="/assets/icons/Nuts.png" alt="" className="h-[85%] w-auto" draggable={false} />
+                              <span className="font-galmuri9 text-[12px] text-ink">{it.price * n}</span>
+                            </span>
                           </button>
                         </div>
                       )
@@ -271,9 +275,13 @@ export default function ShopPage() {
                           {/* 가격 */}
                           <button onClick={() => setConfirmTarget({ kind: 'furn', entity: f, qty: 1 })}
                                   disabled={!canBuyFurn}
-                                  className="btn-icon absolute left-[16%] top-[79%] flex w-[55%] items-center justify-center gap-1 rounded-full border-2 border-accent-ink bg-accent py-0.5 disabled:opacity-40">
-                            <img src="/assets/icons/Nuts.png" alt="" className="h-[12px] w-[12px]" draggable={false} />
-                            <span className="font-galmuri9 text-[10px] font-bold text-ink">{f.price}</span>
+                                  className="btn-icon absolute left-[19%] top-[78%] w-[55%] disabled:opacity-50">
+                            <img src="/assets/ui/PriceBar.png" alt=""
+                                 className="block w-full select-none" draggable={false} />
+                            <span className="absolute inset-x-0 bottom-[8%] top-0 flex items-center justify-center gap-1">
+                              <img src="/assets/icons/Nuts.png" alt="" className="h-[80%] w-auto" draggable={false} />
+                              <span className="font-galmuri9 text-[13px] text-ink">{f.price}</span>
+                            </span>
                           </button>
 
                           {/* 담기 */}
@@ -374,8 +382,8 @@ export default function ShopPage() {
             {/* 담은 목록 */}
             <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto px-[5%] pb-[3%]">
               {cart.length === 0 ? (
-                <p className="py-10 text-center font-galmuri11 text-[10px] text-ink-dim">
-                  담은 상품이 없어요.
+                <p className="py-10 text-center font-galmuri11 text-[12px] text-ink-dim">
+                  아직 담은 상품이 없어요.
                 </p>
               ) : (
                 [['item', '아이템'], ['furn', '인테리어']].map(([kind, label]) => {
