@@ -98,13 +98,13 @@ background-color: #0D0D1A;
    배경 이미지가 나오면 background-color를 지우고 아래 주석을 풀면 됨.
    ※ 폭은 .shell의 우주배경과 같은 450px 기준 — 450의 약수 폭으로 그릴 것 */
 .shell.shell-plain {
-  background-color: #ffffff;
-  background-image: none;
+  /*background-color: #ffffff;
+  background-image: none;*/
 
-  /* background-image: url('/assets/ui/PageBg.png');
+   background-image: url('/assets/ui/PageBg.png');
      background-size: 450px auto;
      background-position: bottom center;
-     background-repeat: no-repeat; */
+     background-repeat: no-repeat; 
 }
 
 /* 하단 탭바 — 0단계에서 토큰 색상으로 재스킨 (구조는 TabBar.jsx 그대로) */
