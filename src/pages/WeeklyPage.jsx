@@ -6,22 +6,24 @@ import NutsBar from '../components/NutsBar'
 
 const gradeColor = (g) => GRADE_TABLE.find((x) => x.grade === g)?.color ?? '#9ca3af'
 
-/** 단상 하나 — 아이템이 없으면 빈 받침만
- *  ※ 단상 에셋 나오면 아래 받침 <div>를 <img src="/assets/ui/Pedestal.png">로 교체 */
+/** 단상(실험실 캡슐) — 아이템이 없으면 빈 캡슐만 */
 function Pedestal({ item }) {
   return (
-    <div className="flex w-[22%] flex-none flex-col items-center">
-      <div className="flex aspect-square w-full items-end justify-center">
-        {item && (
+    <div className="relative w-[24%] flex-none">
+      {/* 캡슐 */}
+      <img src="/assets/ui/Pedestal.png" alt=""
+           className="block w-full select-none" draggable={false} />
+
+      {/* 아이템 — 캡슐 유리 안쪽에 들어간 모양 */}
+      {item && (
+        <div className="absolute inset-x-0 bottom-[22%] top-0 flex items-center justify-center">
           <img src={item.image_url} alt={item.name}
-               className="pixel max-h-full max-w-full object-contain" />
-        )}
-      </div>
-      <div className="h-[14px] w-full rounded-[50%] border-2 border-accent-ink bg-accent" />
+               className="pixel max-h-[60%] max-w-[60%] object-contain" draggable={false} />
+        </div>
+      )}
     </div>
   )
 }
-
 export default function WeeklyPage() {
   const navigate = useNavigate()
   const [data, setData] = useState(null)
@@ -85,12 +87,12 @@ export default function WeeklyPage() {
       </div>
 
       {/* ── 제목 ── */}
-      <h2 className="mt-[10%] flex-none text-center font-galmuri9 text-[20px] font-bold text-accent-2 [text-shadow:_-1.5px_0_white,_0_1.5px_white,_1.5px_0_white,_0_-1.5px_white]">
+      <h2 className="mt-[6%] flex-none text-center font-galmuri9 text-[26px] font-bold text-accent-2 [text-shadow:_-1.5px_0_white,_0_1.5px_white,_1.5px_0_white,_0_-1.5px_white]">
         주간 평가
       </h2>
 
       {/* ── 마스코트 + 말풍선 ── */}
-      <div className="mt-[3%] flex flex-none items-start">
+      <div className="mt-[20%] flex flex-none items-start">
         <img src="/assets/char/hakase_test.png" alt=""
              className="pixel w-[30%] flex-none select-none" draggable={false} />
 
@@ -101,8 +103,10 @@ export default function WeeklyPage() {
             <p className="font-galmuri11 text-[15px] leading-relaxed text-ink">
               이번 주 주간평가<br />보너스 아이템은...
             </p>
-            <p className="mt-1 font-galmuri9 text-[20px] font-bold text-accent-2">
-              {current.bonusLabel}
+            <p className="mt-1 font-galmuri9 text-[20px] font-bold text-white">
+              <span className="[text-shadow:_-1.5px_0_var(--color-accent-2),_0_1.5px_var(--color-accent-2),_1.5px_0_var(--color-accent-2),_0_-1.5px_var(--color-accent-2)]">
+                {current.bonusLabel}
+              </span>
               <span className="ml-1 font-galmuri11 text-[15px] font-normal text-ink">(이)라네..</span>
             </p>
           </div>
@@ -110,11 +114,11 @@ export default function WeeklyPage() {
       </div>
 
       {/* ── 단상 7개 (위 4 / 아래 3) ── */}
-      <div className="mt-[6%] flex flex-none flex-col items-center">
-        <div className="flex w-full justify-center gap-[2%]">
+      <div className="mt-[7%] flex flex-none flex-col items-center">
+        <div className="flex w-full justify-center gap-[3%]">
           {slots.slice(0, 4).map((it, i) => <Pedestal key={i} item={it} />)}
         </div>
-        <div className="-mt-[3%] flex w-full justify-center gap-[2%]">
+        <div className="mt-[2%] flex w-full justify-center gap-[3%]">
           {slots.slice(4, 7).map((it, i) => <Pedestal key={i} item={it} />)}
         </div>
       </div>
@@ -141,7 +145,7 @@ export default function WeeklyPage() {
         )}
 
         {!current.claimed && !current.isSunday && (
-          <p className="mt-2 text-center font-galmuri11 text-[9px] text-white">
+          <p className="mt-2 text-center font-galmuri11 text-[9px] text-black">
             평가는 일요일에 열려요
           </p>
         )}
