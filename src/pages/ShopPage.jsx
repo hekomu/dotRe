@@ -3,15 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { getShop, buyItem, getFurniture, buyFurniture } from '../lib/api'
 import { RARITY_TABLE } from '../game/statSystem'
 import { FURNITURE_CATEGORY_KEYS, FURNITURE_CATEGORY_LABELS } from '../game/furniture'
-
-/** 등급 → 뱃지 에셋. 실제 rarity 키가 다르면 여기만 고치면 됨 */
-const GRADE_ICON = {
-  normal: '/assets/icons/GradeNormal.png',
-  rare:   '/assets/icons/GradeRare.png',
-  epic:   '/assets/icons/GradeEpic.png',
-  unique: '/assets/icons/GradeUnique.png',
-}
-const gradeIcon = (r) => GRADE_ICON[r] ?? GRADE_ICON.normal
+import { gradeIcon } from '../game/gradeIcons'
 
 const MAX_QTY = 5
 

@@ -3,6 +3,7 @@ import { useAuth } from '../lib/AuthContext'
 import { getMyItems } from '../lib/diaryService'
 import { getReceivedItems } from '../lib/tradeService'
 import { RARITY_TABLE, STAT_KEYS, STAT_LABELS, statPercent } from '../game/statSystem'
+import { gradeIcon } from '../game/gradeIcons'
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
 
@@ -97,7 +98,7 @@ export default function CalendarPage() {
   const pickedItems = picked ? byDate[picked] || [] : []
 
   return (
-    <div className="flex h-full flex-col px-[3.5%] py-[3%]">
+    <div className="flex h-full flex-col px-[0%] py-[1%]">
       {/* ── 달력 전체 박스 (헤더 + 달력) ── */}
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[6px] border-2 border-border bg-surface">
 
@@ -179,18 +180,18 @@ export default function CalendarPage() {
             </div>
 
             {/* 요일 + 날짜 격자 + 상세 (스크롤 영역) */}
-            <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto px-[3%] pb-[3%] pt-[3%]">
+            <div className="no-scrollbar min-h-0 flex-1 overflow-y-auto px-[2%] pb-[3%] pt-[4%]">
               {/* 요일 */}
-              <div className="grid grid-cols-7 text-center font-galmuri9 text-[10px] text-ink-dim">
+              <div className="grid grid-cols-7 text-center font-galmuri9 text-[13px] text-ink-dim">
                 {WEEKDAYS.map((w, i) => (
                   <div key={i} className={i === 0 ? 'text-accent-2' : ''}>{w}</div>
                 ))}
               </div>
 
               {/* 날짜 격자 */}
-              <div className="mt-1 grid grid-cols-7 gap-1">
+              <div className="mt-2 grid grid-cols-7 gap-1">
                 {cells.map((date, i) => {
-                  if (!date) return <div key={i} className="h-16" />
+                  if (!date) return <div key={i} className="h-18" />
                   const key = toKey(date)
                   const dayItems = byDate[key] || []
                   const isToday = key === todayKey
@@ -279,9 +280,9 @@ export default function CalendarPage() {
         return (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-6"
                onClick={() => setDetail(null)}>
-            <div className="max-h-[80dvh] w-full max-w-[360px] overflow-hidden rounded-[10px] border-2 border-line bg-surface shadow-[4px_4px_0_rgba(0,0,0,0.35)]"
+            <div className="max-h-[80dvh] w-full max-w-[370px] overflow-hidden rounded-[10px] border-2 border-line bg-surface shadow-[4px_4px_0_rgba(0,0,0,0.35)]"
                  onClick={(e) => e.stopPropagation()}>
-              <div className="flex items-center gap-2 border-b-2 border-line bg-accent px-3 py-1">
+              <div className="flex items-center gap-2 border-b-1 border-line bg-accent px-3 py-2">
                 <span className="flex-1 truncate font-galmuri9 text-[11px] font-bold text-accent-ink">
                   {detail.name}
                 </span>
@@ -296,11 +297,9 @@ export default function CalendarPage() {
                   <img src={detail.image_url} alt={detail.name}
                        className="pixel h-28 w-28 rounded-[6px] border-2 border-border"
                        style={{ backgroundColor: rarity.color + '22' }} />
-                  <span className="mt-2 rounded-full border-2 border-line px-3 py-0.5 font-galmuri9 text-[9px] font-bold text-white"
-                        style={{ backgroundColor: rarity.color }}>
-                    {rarity.label}
-                  </span>
-                  <p className="mt-2 whitespace-pre-line text-center font-galmuri11 text-[10px] text-ink-dim">
+                   <img src={gradeIcon(detail.rarity)} alt={rarity.label}
+                       className="mt-2 w-[16%] select-none" draggable={false} />
+                  <p className="mt-2 whitespace-pre-line text-center font-galmuri11 text-[11px] text-ink-dim">
                     {detail.description}
                   </p>
                 </div>
@@ -317,7 +316,7 @@ export default function CalendarPage() {
                 <div className="mt-3 rounded-[6px] border-2 border-border bg-surface-2 p-2">
                   {STAT_KEYS.map((k) => (
                     <div key={k} className="mb-2 flex items-center gap-2 last:mb-0">
-                      <span className="w-14 font-galmuri11 text-[9px] text-ink">
+                      <span className="w-14 font-galmuri11 text-[11px] text-ink">
                         {STAT_LABELS[k].icon} {STAT_LABELS[k].ko}
                       </span>
                       <div className="h-2 flex-1 rounded-full border border-border bg-white">
@@ -325,7 +324,7 @@ export default function CalendarPage() {
                              style={{ width: `${statPercent(detail.stats?.[k] ?? 0)}%`,
                                       backgroundColor: STAT_LABELS[k].color }} />
                       </div>
-                      <span className="w-7 text-right font-galmuri9 text-[9px] font-bold text-ink">
+                      <span className="w-7 text-right font-galmuri9 text-[10px] font-bold text-ink">
                         {detail.stats?.[k] ?? 0}
                       </span>
                     </div>

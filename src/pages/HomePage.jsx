@@ -1,4 +1,5 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
+import { supabase } from '../lib/supabaseClient'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/AuthContext'
 import { isDevAccount } from '../lib/devAccounts'
@@ -10,6 +11,14 @@ export default function HomePage() {
   const navigate = useNavigate()
   const { session } = useAuth()
   const [hasWrittenToday, setHasWrittenToday] = useState(false)
+const [nickname, setNickname] = useState(null)
+
+  useEffect(() => {
+    const id = session?.user?.id
+    if (!id) return
+    supabase.from('profiles').select('nickname, full_name').eq('id', id).single()
+      .then(({ data }) => setNickname(data?.nickname ?? data?.full_name ?? null))
+  }, [session])
 
   const handleStatusLoaded = useCallback((isWritten) => {
     setHasWrittenToday(isWritten)
@@ -33,7 +42,7 @@ export default function HomePage() {
             <div className="flex min-w-0 flex-1 flex-col gap-1">
               {/* ▼ 닉네임 필드명은 실제 스키마에 맞게 바꿔줘 */}
               <span className="truncate font-galmuri11 text-[13px] text-ink">
-                {session?.user?.user_metadata?.nickname ?? '이름'}
+                {nickname ?? '이름'}
               </span>
               <NutsBadge widthClass="w-[70%]" textClass="text-[15px]" />
               <span className="text-right font-galmuri11 text-[9px] text-ink-dim">프로필 설정</span>
