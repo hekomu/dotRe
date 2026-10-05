@@ -19,7 +19,12 @@ async function uploadPhoto(userId, file) {
   return data.publicUrl
 }
 
-/** 연속 작성일 계산 — 오늘부터 거슬러 올라가며 끊기는 지점까지 */
+/** 로컬 기준 'YYYY-MM-DD' — 저장할 때 쓰는 형식과 동일하게 맞춘다 */
+const dateKey = (d) => d.toLocaleDateString('sv-SE')
+
+/** 연속 작성일 계산.
+ *  오늘 기록이 있으면 오늘부터, 없으면 어제부터 거슬러 올라가며 끊기는 지점까지 센다.
+ *  (오늘 아직 안 썼어도 "어제까지 N일 연속"을 보여주기 위함) */
 export async function getStreakDays(userId) {
   const { data, error } = await supabase
     .from('diaries')
@@ -29,13 +34,13 @@ export async function getStreakDays(userId) {
     .limit(60)
   if (error || !data?.length) return 0
 
-  const days = [...new Set(data.map((d) => String(d.diary_date).slice(0, 10)))]
-  let streak = 0
-  const cursor = new Date()
+  const days = new Set(data.map((d) => String(d.diary_date).slice(0, 10)))
 
-  for (const day of days) {
-    const expect = cursor.toISOString().slice(0, 10)
-    if (day !== expect) break
+  const cursor = new Date()
+  if (!days.has(dateKey(cursor))) cursor.setDate(cursor.getDate() - 1)
+
+  let streak = 0
+  while (days.has(dateKey(cursor))) {
     streak += 1
     cursor.setDate(cursor.getDate() - 1)
   }

@@ -1,10 +1,10 @@
 import { NavLink } from 'react-router-dom'
 
 const tabs = [
-  { to: '/trade', label: '교환', icon: '/assets/icons/trade.png' },
   { to: '/calendar', label: '캘린더', icon: '/assets/icons/calendar.png' },
+   { to: '/friends', label: '친구', icon: '/assets/icons/friend.png' },
   { to: '/', label: '홈', icon: '/assets/icons/home.png' },
-  { to: '/friends', label: '친구', icon: '/assets/icons/friend.png' },
+  { to: '/trade', label: '교환', icon: '/assets/icons/trade.png' },
   { to: '/weekly', label: '평가', icon: '/assets/icons/test.png' },
 ]
 
