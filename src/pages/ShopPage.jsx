@@ -318,12 +318,12 @@ export default function ShopPage() {
           <div className="relative w-full overflow-hidden rounded-[8px] border-2 border-border bg-surface shadow-[3px_3px_0_rgba(0,0,0,0.25)]"
                onClick={(e) => e.stopPropagation()}>
             <button onClick={() => setConfirmTarget(null)} aria-label="닫기"
-                    className="btn-icon absolute right-[4%] top-[3%] w-[11%]">
+                    className="btn-icon absolute right-[4%] top-[3%] w-[9%]">
               <img src="/assets/ui/XButton.png" alt="" className="block w-full" draggable={false} />
             </button>
 
             <img src="/assets/ui/BuyTex.png" alt="결제확인"
-                 className="mx-auto mt-[9%] w-[45%] select-none" draggable={false} />
+                 className="mx-auto mt-[9%] w-[35%] select-none" draggable={false} />
 
             <img src={confirmTarget.entity.image_url} alt=""
                  className="pixel mx-auto mt-[5%] h-[72px] w-[72px] rounded-[6px] border-2 border-border bg-white object-contain"
@@ -433,7 +433,7 @@ export default function ShopPage() {
               </div>
               <button onClick={() => runPurchase(cart)}
                       disabled={cart.length === 0 || busy === 'pay'}
-                      className="btn-icon w-[38%] disabled:opacity-40">
+                      className="mt-[4%] btn-icon w-[44%] disabled:opacity-40">
                 <img src="/assets/ui/Buy.png" alt="구매하기" className="block w-full" draggable={false} />
               </button>
             </div>
@@ -446,12 +446,12 @@ export default function ShopPage() {
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/40 px-[8%]">
           <div className="relative w-full overflow-hidden rounded-[8px] border-2 border-border bg-surface px-[6%] py-[8%] text-center shadow-[3px_3px_0_rgba(0,0,0,0.25)]">
             <button onClick={() => setDone(false)} aria-label="닫기"
-                    className="btn-icon absolute right-[4%] top-[3%] w-[11%]">
+                    className="btn-icon absolute right-[4%] top-[3%] w-[9%]">
               <img src="/assets/ui/XButton.png" alt="" className="block w-full" draggable={false} />
             </button>
 
-            <p className="mt-[6%] font-galmuri11 text-[11px] text-ink-dim">결제가 완료되었습니다.</p>
-            <p className="mt-[4%] font-galmuri9 text-[18px] font-bold leading-relaxed text-ink">
+            <p className="mt-[7%] font-galmuri11 text-[11px] text-ink-dim">결제가 완료되었습니다.</p>
+            <p className="mt-[8%] font-galmuri9 text-[18px] font-bold leading-relaxed text-ink">
               이용해주셔서<br />감사합니다!
             </p>
 
@@ -465,7 +465,7 @@ export default function ShopPage() {
             </div>
 
             <button onClick={() => navigate('/')}
-                    className="btn-icon mx-auto mt-[10%] block w-[55%]">
+                    className="btn-icon mx-auto mt-[14%] block w-[45%]">
               <img src="/assets/ui/GoHome.png" alt="홈으로 바로가기" className="block w-full" draggable={false} />
             </button>
           </div>

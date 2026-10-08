@@ -19,9 +19,9 @@ import CustomizePage from './pages/CustomizePage'
 /** 앱 셸 — 세로 플렉스. 본문만 스크롤되고 탭바는 항상 바닥에.
  *  withWindow=false → 레트로윈도우 없이 본문만 (교환·주간평가)
  *  windowBare=true  → 창 크기/테두리만 쓰고 타이틀바·메뉴탭은 없음 (상점) */
-function Shell({ withTabBar = true, withWindow = true, windowBare = false }) {
+function Shell({ withTabBar = true, withWindow = true, windowBare = false, whiteBg = false }) {
   return (
-    <div className={`shell${withWindow ? '' : ' shell-plain'}`}>
+    <div className={`shell${whiteBg ? ' shell-plain' : ''}`}>
       {withWindow ? (
         <RetroWindow bare={windowBare}>
           <main className={`shell-main${windowBare ? ' shell-main-flush' : ''}`}>
@@ -37,7 +37,6 @@ function Shell({ withTabBar = true, withWindow = true, windowBare = false }) {
       {withTabBar ? (
         <TabBar />
       ) : (
-        /* 탭바 없는 페이지도 창 위치가 같게 — 같은 크기의 빈 자리만 차지 */
         <div className="tabbar" style={{ visibility: 'hidden' }} aria-hidden="true" />
       )}
     </div>
@@ -53,13 +52,9 @@ function TabLayout() {
   )
 }
 
-/** 로그인 필요 + 탭바 있음 + 레트로윈도우 없음 (교환·주간평가) */
+/** 탭바 O + 창 X + 흰 배경 (교환·주간평가) */
 function TabLayoutNoWindow() {
-  return (
-    <ProtectedRoute>
-      <Shell withWindow={false} />
-    </ProtectedRoute>
-  )
+  return <ProtectedRoute><Shell withWindow={false} whiteBg /></ProtectedRoute>
 }
 
 /** 로그인 필요 + 탭바 없음 + 창 크기만 (상점) */
@@ -80,6 +75,11 @@ function FullLayout() {
   )
 }
 
+/** 탭바 X + 창 X + 우주 배경 (프로필·커스텀) */
+function SpaceLayout() {
+  return <ProtectedRoute><Shell withTabBar={false} withWindow={false} /></ProtectedRoute>
+}
+
 export default function App() {
   return (
     <BrowserRouter>
@@ -94,7 +94,6 @@ export default function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/calendar" element={<CalendarPage />} />
           <Route path="/friends" element={<FriendsPage />} />
-          <Route path="/profile" element={<ProfilePage />} />
           <Route path="/settings" element={<SettingsPage />} />
         </Route>
 
@@ -114,6 +113,10 @@ export default function App() {
           <Route path="/write" element={<DiaryWritePage />} />
           <Route path="/item/:itemId" element={<ItemResultPage />} />
           <Route path="/room" element={<RoomEditPage />} />
+        </Route>
+
+        <Route element={<SpaceLayout />}>
+          <Route path="/profile" element={<ProfilePage />} />
           <Route path="/customize" element={<CustomizePage />} />
         </Route>
       </Routes>

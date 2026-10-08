@@ -4,6 +4,10 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/AuthContext'
 import { getRoomItems, saveRoomLayout, getRoomFurniture, saveFurnitureLayout } from '../lib/roomService'
 
+/** 목록 격자 한 줄에 들어갈 칸 수 / 최소로 깔아둘 빈 칸 수 */
+const COLS = 5
+const MIN_SLOTS = 10
+
 export default function RoomEditPage() {
   const { session } = useAuth()
   const myId = session?.user.id
@@ -76,135 +80,157 @@ export default function RoomEditPage() {
   const sel = selected && rowsOf(selected.kind).find((r) => r.id === selected.id)
   const selName = sel ? (selected.kind === 'item' ? sel.items.name : sel.furniture_catalog?.name) : null
 
+  // 목록 격자 — 보유분 + 빈 칸 패딩
+  const stored = tab === 'item' ? storedItems : storedFurn
+  const slotCount = Math.max(MIN_SLOTS, Math.ceil(stored.length / COLS) * COLS)
+  const slots = Array.from({ length: slotCount }, (_, i) => stored[i] ?? null)
+
+  const imgOf = (r) => (tab === 'item' ? r.items?.image_url : r.furniture_catalog?.image_url)
+  const nameOf = (r) => (tab === 'item' ? r.items?.name : r.furniture_catalog?.name)
+
   return (
-    <div className="flex h-full flex-col p-4">
-      <div className="mb-3 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <button onClick={() => navigate('/')} className="text-xl text-gray-400">←</button>
-          <h2 className="text-lg font-bold">방 꾸미기</h2>
-        </div>
-        <button onClick={handleSave} disabled={!dirty || saving}
-                className="rounded-full bg-lime-400 px-4 py-1.5 text-sm font-bold disabled:bg-gray-200 disabled:text-gray-400">
-          {saving ? '저장 중...' : '저장'}
-        </button>
-      </div>
+    <div className="relative h-full overflow-hidden">
+      {/* 페이지 배경 */}
+      <img src="/assets/ui/RoomSetting_Bg.png" alt=""
+           className="pointer-events-none absolute inset-0 h-full w-full object-cover select-none"
+           draggable={false} />
 
-      <div ref={roomRef}
-           onPointerMove={handleMove}
-           onPointerUp={() => setDragId(null)}
-           onPointerLeave={() => setDragId(null)}
-           onPointerDown={(e) => { if (e.target === roomRef.current) setSelected(null) }}
-           className="relative aspect-square w-full touch-none overflow-hidden rounded-2xl">
-             <img
-                src={DEFAULT_ROOM_BG}
-                alt=""
-                className="pointer-events-none absolute inset-0 h-full w-full object-cover"
-                style={{ zIndex: 0 }}
-                draggable={false}
-              />
-        {placedAll.map((r) => (
-          <img key={`${r.kind}-${r.id}`}
-               src={r.image}
-               alt={r.name}
-               draggable={false}
-               onPointerDown={(e) => {
-                 e.preventDefault()
-                 e.currentTarget.setPointerCapture(e.pointerId)
-                 setDragId({ kind: r.kind, id: r.id })
-                 setSelected({ kind: r.kind, id: r.id })
-               }}
-               className={`pixel absolute cursor-move select-none
-                 ${selected?.kind === r.kind && selected?.id === r.id ? 'ring-2 ring-lime-400' : ''}`}
-               style={{
-                 left: `${(r.x ?? 0.5) * 100}%`,
-                 top: `${(r.y ?? 0.5) * 100}%`,
-                 width: `${r.size * (r.scale ?? 1) * 100}%`,
-                 zIndex: r.z ?? 0,
-                 transform: `translate(-50%, -50%) scaleX(${r.flipped ? -1 : 1})`,
-               }} />
-        ))}
+      <div className="relative flex h-full flex-col px-[4%] py-[3%]">
 
-        {placedAll.length === 0 && (
-          <p className="absolute inset-0 flex items-center justify-center text-sm text-gray-400">
-            아래 보관함에서 아이템·가구를 꺼내보세요
-          </p>
-        )}
-      </div>
-
-      {sel && (
-        <div className="mt-2 rounded-xl bg-gray-50 p-2">
-          <div className="flex items-center gap-2">
-            <span className="line-clamp-1 flex-1 text-xs font-bold">{selName}</span>
-            <button onClick={() => update(selected.kind, sel.id, { flipped: !sel.flipped })}
-                    className="rounded bg-white px-2 py-1 text-xs">좌우반전</button>
-            <button onClick={() => {
-                      const maxZ = Math.max(0, ...itemRows.map((r) => r.z ?? 0), ...furnRows.map((r) => r.z ?? 0))
-                      update(selected.kind, sel.id, { z: maxZ + 1 })
-                    }}
-                    className="rounded bg-white px-2 py-1 text-xs">앞으로</button>
-            <button onClick={() => { update(selected.kind, sel.id, { placed: false }); setSelected(null) }}
-                    className="rounded bg-red-100 px-2 py-1 text-xs text-red-500">치우기</button>
-          </div>
-
-          <div className="mt-2 flex items-center gap-2">
-            <span className="text-xs text-gray-400">크기</span>
-            <input type="range" min="0.4" max="2" step="0.05"
-                   value={sel.scale ?? 1}
-                   onChange={(e) => update(selected.kind, sel.id, { scale: Number(e.target.value) })}
-                   className="flex-1" />
-            <span className="w-10 text-right text-xs">{Math.round((sel.scale ?? 1) * 100)}%</span>
-          </div>
-        </div>
-      )}
-
-      <div className="mb-2 mt-3 flex gap-2">
-        {[['item', `아이템 (${storedItems.length})`], ['furniture', `가구 (${storedFurn.length})`]].map(([key, lbl]) => (
-          <button key={key} onClick={() => setTab(key)}
-            className={`rounded-full px-3 py-1 text-xs font-bold ${
-              tab === key ? 'bg-lime-400' : 'bg-gray-100 text-gray-500'
-            }`}>
-            {lbl}
+        {/* ── 헤더: 뒤로 / 방 편집 / 저장 ── */}
+        <div className="flex flex-none items-center justify-between">
+          <button onClick={() => navigate('/')} aria-label="홈으로" className="btn-icon w-[13%]">
+            <img src="/assets/ui/Back.png" alt="" className="block w-full select-none" draggable={false} />
           </button>
-        ))}
-      </div>
 
-      <div className="flex-1 overflow-y-auto">
-        {tab === 'item' ? (
-          storedItems.length === 0 ? (
-            <p className="py-6 text-center text-xs text-gray-400">상점에서 아이템을 구매하면 여기에 담겨요.</p>
-          ) : (
-            <div className="grid grid-cols-4 gap-2">
-              {storedItems.map((r) => (
-                <button key={r.id} onClick={() => placeRow('item', r)}
-                        className="flex flex-col items-center rounded-xl border p-1">
-                  <img src={r.items.image_url} alt={r.items.name} className="pixel h-12 w-12 object-contain" />
-                  <span className="mt-0.5 line-clamp-1 text-[10px]">{r.items.name}</span>
-                </button>
-              ))}
+          <h2 className="border-b-2 border-accent-2 pb-0.5 font-galmuri9 text-[24px] font-bold text-accent-2">
+            방 편집
+          </h2>
+
+          <button onClick={handleSave} disabled={!dirty || saving}
+                  aria-label="저장" className="btn-icon w-[24%] disabled:opacity-40">
+            <img src="/assets/ui/RoomSave.png" alt="저장" className="block w-full select-none" draggable={false} />
+          </button>
+        </div>
+
+        {/* ── 방 ── */}
+        <div ref={roomRef}
+             onPointerMove={handleMove}
+             onPointerUp={() => setDragId(null)}
+             onPointerLeave={() => setDragId(null)}
+             onPointerDown={(e) => { if (e.target === roomRef.current) setSelected(null) }}
+             className="relative mt-[3%] aspect-square w-full flex-none touch-none overflow-hidden rounded-[14px]">
+          <img src={DEFAULT_ROOM_BG} alt=""
+               className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+               style={{ zIndex: 0 }} draggable={false} />
+
+          {placedAll.map((r) => (
+            <img key={`${r.kind}-${r.id}`}
+                 src={r.image}
+                 alt={r.name}
+                 draggable={false}
+                 onPointerDown={(e) => {
+                   e.preventDefault()
+                   e.currentTarget.setPointerCapture(e.pointerId)
+                   setDragId({ kind: r.kind, id: r.id })
+                   setSelected({ kind: r.kind, id: r.id })
+                 }}
+                 className={`pixel absolute cursor-move select-none
+                   ${selected?.kind === r.kind && selected?.id === r.id ? 'ring-2 ring-accent' : ''}`}
+                 style={{
+                   left: `${(r.x ?? 0.5) * 100}%`,
+                   top: `${(r.y ?? 0.5) * 100}%`,
+                   width: `${r.size * (r.scale ?? 1) * 100}%`,
+                   zIndex: r.z ?? 0,
+                   transform: `translate(-50%, -50%) scaleX(${r.flipped ? -1 : 1})`,
+                 }} />
+          ))}
+
+          {placedAll.length === 0 && (
+            <p className="absolute inset-0 flex items-center justify-center font-galmuri11 text-[10px] text-ink-dim">
+              아래 보관함에서 아이템·가구를 꺼내보세요
+            </p>
+          )}
+        </div>
+
+        {/* ── 선택한 물건 조작 ── */}
+        {sel && (
+          <div className="mt-[3%] flex-none rounded-[8px] border-2 border-border bg-white/80 p-3">
+            <div className="flex items-center gap-2">
+
+              <button onClick={() => update(selected.kind, sel.id, { flipped: !sel.flipped })}
+                      className="btn-icon rounded-[6px] border border-border px-4 py-1 font-galmuri9 text-[12px] text-ink"
+                      style={{ backgroundColor: '#E1FF96' }}>
+                좌우반전
+              </button>
+              <button onClick={() => {
+                        const maxZ = Math.max(0, ...itemRows.map((r) => r.z ?? 0), ...furnRows.map((r) => r.z ?? 0))
+                        update(selected.kind, sel.id, { z: maxZ + 1 })
+                      }}
+                      className="btn-icon rounded-[6px] border border-border px-4 py-1 font-galmuri9 text-[12px] text-ink"
+                      style={{ backgroundColor: '#E1FF96' }}>
+                앞으로
+              </button>
+              <button onClick={() => { update(selected.kind, sel.id, { placed: false }); setSelected(null) }}
+                      className="btn-icon rounded-[6px] border border-border px-4 py-1 font-galmuri9 text-[12px] text-accent-2"
+                      style={{ backgroundColor: '#E1FF96' }}>
+                치우기
+              </button>
             </div>
-          )
-        ) : (
-          storedFurn.length === 0 ? (
-            <p className="py-6 text-center text-xs text-gray-400">상점에서 가구를 구매하면 여기에 담겨요.</p>
-          ) : (
-            <div className="grid grid-cols-4 gap-2">
-              {storedFurn.map((r) => (
-                <button key={r.id} onClick={() => placeRow('furniture', r)}
-                        className="flex flex-col items-center rounded-xl border p-1">
-                  {r.furniture_catalog?.image_url ? (
-                    <img src={r.furniture_catalog.image_url} alt={r.furniture_catalog?.name}
-                         className="pixel h-12 w-12 object-contain" />
-                  ) : (
-                    <div className="flex h-12 w-12 items-center justify-center rounded bg-gray-100 text-[8px] text-gray-300">준비중</div>
-                  )}
-                  <span className="mt-0.5 line-clamp-1 text-[10px]">{r.furniture_catalog?.name}</span>
-                </button>
-              ))}
+
+            <div className="mt-2 flex items-center gap-2">
+              <span className="font-galmuri9 text-[12px] text-ink-dim">크기</span>
+              <input type="range" min="0.4" max="2" step="0.05"
+                     value={sel.scale ?? 1}
+                     onChange={(e) => update(selected.kind, sel.id, { scale: Number(e.target.value) })}
+                     className="flex-1" />
+              <span className="w-10 text-right font-galmuri9 text-[12px] text-ink">
+                {Math.round((sel.scale ?? 1) * 100)}%
+              </span>
             </div>
-          )
+          </div>
         )}
-      </div>
 
+        {/* ── 보관함 목록 ── */}
+        <div className="relative mt-[6%] flex-none">
+          <img src="/assets/ui/RoomItemlist.png" alt=""
+               className="block w-full select-none" draggable={false} />
+
+          {/* 아이템 / 인테리어 탭 — 패널 위쪽에 걸침 */}
+          <div className="absolute inset-x-0 -top-[7%] mx-auto w-[62%]">
+            <img src={tab === 'item' ? '/assets/ui/Room_ItemPick.png' : '/assets/ui/Room_InteriorPick.png'}
+                 alt={tab === 'item' ? '아이템' : '인테리어'}
+                 className="block w-full select-none" draggable={false} />
+            <button onClick={() => setTab('item')} aria-label="아이템"
+                    className="btn-icon absolute inset-y-0 left-0 w-1/2" />
+            <button onClick={() => setTab('furniture')} aria-label="인테리어"
+                    className="btn-icon absolute inset-y-0 right-0 w-1/2" />
+          </div>
+
+          {/* 격자 — 이름 없이 이미지만 */}
+          <div className="no-scrollbar absolute inset-x-[4%] bottom-[5%] top-[14%] overflow-y-auto">
+            <div className="grid grid-cols-5 gap-[3%]">
+              {slots.map((r, i) =>
+                r ? (
+                  <button key={r.id}
+                          onClick={() => placeRow(tab === 'item' ? 'item' : 'furniture', r)}
+                          aria-label={nameOf(r)}
+                          className="btn-icon flex aspect-square items-center justify-center rounded-[8px] border border-border bg-white p-1">
+                    {imgOf(r) ? (
+                      <img src={imgOf(r)} alt="" className="pixel max-h-full max-w-full object-contain" draggable={false} />
+                    ) : (
+                      <span className="font-galmuri9 text-[7px] text-ink-dim">준비중</span>
+                    )}
+                  </button>
+                ) : (
+                  <div key={`empty-${i}`}
+                       className="aspect-square rounded-[8px] border border-border bg-white" />
+                )
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

@@ -3,8 +3,27 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/AuthContext'
 import { getProfileFull, updateProfile, setRepItems, deleteMyAccount } from '../lib/profileService'
 import { getMyItems } from '../lib/diaryService'
-import ProfileCard from '../components/ProfileCard'
 import { RARITY_TABLE } from '../game/statSystem'
+
+/** 'YYYY-MM-DD' → '11월 27일' */
+const fmtBirthday = (b) => {
+  if (!b) return '미설정'
+  const [, m, d] = String(b).slice(0, 10).split('-')
+  return `${Number(m)}월 ${Number(d)}일`
+}
+
+/** 정보 캡슐 한 줄 */
+function InfoBar({ label, value }) {
+  return (
+    <div className="relative w-full">
+      <img src="/assets/ui/ProfileBar.png" alt="" className="block w-full select-none" draggable={false} />
+      <div className="absolute inset-x-[5%] inset-y-0 flex items-center justify-between">
+        <span className="font-galmuri11 text-[15px] text-ink">{label}</span>
+        <span className="truncate pl-2 font-galmuri11 text-[13px] text-ink-dim">{value}</span>
+      </div>
+    </div>
+  )
+}
 
 export default function ProfilePage() {
   const { session, signOut } = useAuth()
@@ -12,22 +31,16 @@ export default function ProfilePage() {
   const navigate = useNavigate()
 
   const [info, setInfo] = useState(null)
-  const [editing, setEditing] = useState(false)
-  const [form, setForm] = useState({ nickname: '', bio: '', birthday: '' })
-  const [slotIndex, setSlotIndex] = useState(null)   // 아이템 고르는 중인 슬롯
+  const [showSettings, setShowSettings] = useState(false)   // 내 정보 변경 모달
+  const [editField, setEditField] = useState(null)          // 'nickname' | 'birthday'
+  const [draft, setDraft] = useState('')
+  const [slotIndex, setSlotIndex] = useState(null)
   const [myItems, setMyItems] = useState([])
   const [busy, setBusy] = useState(false)
 
   const load = () => {
     if (!myId) return
-    getProfileFull(myId).then((d) => {
-      setInfo(d)
-      setForm({
-        nickname: d.profile.nickname ?? '',
-        bio: d.profile.bio ?? '',
-        birthday: d.profile.birthday ?? '',
-      })
-    })
+    getProfileFull(myId).then(setInfo)
   }
   useEffect(load, [myId])
 
@@ -48,19 +61,25 @@ export default function ProfilePage() {
     load()
   }
 
-  const handleSave = async () => {
+  const startEdit = (field) => {
+    setEditField(field)
+    setDraft(field === 'nickname'
+      ? (info.profile.nickname ?? '')
+      : (info.profile.birthday ? String(info.profile.birthday).slice(0, 10) : ''))
+  }
+
+  const saveField = async () => {
     setBusy(true)
     try {
-      const r = await updateProfile(myId, {
-        nickname: form.nickname.trim() || null,
-        bio: form.bio.trim() || null,
-        birthday: form.birthday || null,
-      })
+      const fields = editField === 'nickname'
+        ? { nickname: draft.trim() || null }
+        : { birthday: draft || null }
+      const r = await updateProfile(myId, fields)
       if (!r.ok && r.reason === 'duplicate') {
         alert('이미 사용 중인 닉네임입니다.')
         return
       }
-      setEditing(false)
+      setEditField(null)
       load()
     } catch (err) {
       alert('저장 실패: ' + err.message)
@@ -69,18 +88,12 @@ export default function ProfilePage() {
     }
   }
 
-  // 로그아웃 처리
   const handleLogout = async () => {
-    if (confirm('로그아웃 하시겠습니까?')) {
-      await signOut()
-    }
+    if (confirm('로그아웃 하시겠습니까?')) await signOut()
   }
 
-  // 회원탈퇴 처리
   const handleDeleteAccount = async () => {
-    const ok = confirm(
-      '정말 회원탈퇴 하시겠습니까?\n작성한 모든 일기와 아이템, 친구 관계가 삭제되며 되돌릴 수 없습니다.'
-    )
+    const ok = confirm('정말 회원탈퇴 하시겠습니까?\n작성한 모든 일기와 아이템, 친구 관계가 삭제되며 되돌릴 수 없습니다.')
     if (!ok) return
     try {
       await deleteMyAccount(myId)
@@ -91,116 +104,193 @@ export default function ProfilePage() {
     }
   }
 
-  if (!info) return <div className="p-4 text-gray-400">불러오는 중...</div>
+  if (!info) {
+    return (
+      <div className="flex h-full items-center justify-center font-galmuri11 text-[11px] text-white">
+        불러오는 중...
+      </div>
+    )
+  }
+
+  const nickname = info.profile.nickname ?? info.profile.full_name ?? '이름 없음'
+  const repSlots = [0, 1, 2].map((i) => info.repItems?.[i] ?? null)
 
   return (
-    <div className="p-4">
-      <div className="mb-4 flex items-center justify-between">
-        <button onClick={() => navigate('/')} className="text-xl text-gray-400">←</button>
-        <span className="rounded-full bg-yellow-100 px-3 py-1 text-sm font-bold">
-          🥜 {info.profile.nuts ?? 0}
-        </span>
-      </div>
+    <div className="relative flex h-full flex-col px-[5%] py-[4%]">
 
-      <h2 className="mb-3 text-center text-lg font-bold">
-        {info.profile.nickname ?? info.profile.full_name ?? '이름 없음'}
-      </h2>
+      {/* ── 닉네임 ── */}
+      <p className="flex-none text-center absolute left-38 top-33 font-galmuri9 text-[18px] font-bold text-white [text-shadow:_-2px_0_#1f241a,_0_2px_#1f241a,_2px_0_#1f241a,_0_-2px_#1f241a]">
+        {nickname}
+      </p>
 
-      {editing ? (
-        <div className="rounded-2xl bg-white p-4 shadow">
-          <label className="mb-1 block text-xs text-gray-500">플레이어 ID (닉네임)</label>
-          <input value={form.nickname}
-                 onChange={(e) => setForm({ ...form, nickname: e.target.value })}
-                 className="mb-3 w-full rounded border p-2" />
-
-          <label className="mb-1 block text-xs text-gray-500">한 줄 소개</label>
-          <input value={form.bio} maxLength={40}
-                 onChange={(e) => setForm({ ...form, bio: e.target.value })}
-                 placeholder="40자 이내"
-                 className="mb-3 w-full rounded border p-2" />
-
-          <label className="mb-1 block text-xs text-gray-500">생일</label>
-          <input type="date" value={form.birthday}
-                 onChange={(e) => setForm({ ...form, birthday: e.target.value })}
-                 className="mb-4 w-full rounded border p-2" />
-
-          <div className="flex gap-2">
-            <button onClick={handleSave} disabled={busy}
-                    className="flex-1 rounded-xl bg-lime-400 py-2 font-bold disabled:opacity-50">
-              저장
-            </button>
-            <button onClick={() => setEditing(false)}
-                    className="flex-1 rounded-xl bg-gray-200 py-2 font-bold">
-              취소
-            </button>
-          </div>
-        </div>
-      ) : (
-        <>
-          <div className="relative mb-4 flex h-40 items-center justify-center rounded-2xl bg-gray-100">
-            <span className="text-xs text-gray-400">아바타 영역 (에셋 준비 중)</span>
-            <button onClick={() => navigate('/customize')}
-                    aria-label="커스터마이징"
-                    className="absolute right-2 top-2 flex h-9 w-9 items-center justify-center rounded-full bg-white text-lg shadow">
-              🧑
-            </button>
-         </div>
-          
-          <ProfileCard {...info} editable onEditSlot={openSlot} />
-          <button onClick={() => setEditing(true)}
-                  className="mt-3 w-full rounded-xl bg-gray-200 py-2 font-bold">
-            정보 수정
+      {/* ── 아바타 + 좌측 버튼 ── */}
+      <div className="relative mt-[8%] flex flex-none justify-center">
+        {/* 좌측 세로 버튼 — 커스텀 / 프로필 설정 */}
+        <div className="absolute left-2 top-35 flex flex-col gap-[14%]">
+          <button onClick={() => navigate('/customize')} aria-label="아바타 꾸미기"
+                  className="btn-icon w-[46px]">
+            <img src="/assets/ui/ProfileCustom.png" alt="" className="block w-full select-none" draggable={false} />
           </button>
-        </>
-      )}
+          <button onClick={() => setShowSettings(true)} aria-label="내 정보 변경"
+                  className="btn-icon absolute top-14 w-[46px]">
+            <img src="/assets/ui/ProfileSetting.png" alt="" className="block w-full select-none" draggable={false} />
+          </button>
+        </div>
 
-      {/* 통합된 계정 설정 (로그아웃 / 회원탈퇴) */}
-      <div className="mt-8 flex flex-col gap-2 border-t pt-4">
-        <p className="text-xs font-bold text-gray-400">계정 관리</p>
-        <button
-          onClick={handleLogout}
-          className="w-full rounded-xl border border-red-300 py-2.5 text-sm text-red-500 font-bold"
-        >
-          로그아웃
-        </button>
-        <button
-          onClick={handleDeleteAccount}
-          className="w-full rounded-xl bg-red-500 py-2.5 text-sm font-bold text-white"
-        >
-          회원탈퇴
+        {/* 임시 아바타 — 단상 에셋 나오면 아래에 깔면 됨 */}
+        <img src="/assets/char/Avatar.png" alt=""
+             className="pixel absolute top-35 w-[35%] select-none" draggable={false} />
+      </div>
+
+      {/* ── 정보 카드 ── */}
+      <div className="mt-auto flex-none rounded-[12px] border-2 border-border bg-surface p-[4%]">
+        <div className="flex flex-col gap-[3%]">
+          <InfoBar label="플레이어 ID" value={info.profile.email ?? session?.user?.email ?? '-'} />
+          <InfoBar label="생일" value={fmtBirthday(info.profile.birthday)} />
+          <InfoBar label="일기작성 횟수" value={`${info.diaryCount ?? 0}회`} />
+        </div>
+
+        {/* 대표 아이템 */}
+        <img src="/assets/ui/Profile_ItemBar.png" alt="대표 아이템"
+             className="mt-[15%] w-[35%] select-none" draggable={false} />
+
+        <div className="mt-[5%] flex gap-[4%]">
+          {repSlots.map((it, i) => (
+            <button key={i} onClick={() => openSlot(i)} aria-label={`대표 아이템 ${i + 1}`}
+                    className="btn-icon relative w-[28%]">
+              <img src="/assets/ui/ProfileItem.png" alt=""
+                   className="block w-full select-none" draggable={false} />
+              {it && (
+                <img src={it.image_url} alt={it.name}
+                     className="pixel absolute inset-[14%] h-[72%] w-[72%] object-contain"
+                     draggable={false} />
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ── 뒤로가기 ── */}
+      <div className="mt-[3%] flex flex-none items-center">
+        <button onClick={() => navigate('/')} aria-label="홈으로" className="btn-icon w-[15%]">
+          <img src="/assets/ui/Back.png" alt="" className="block w-full select-none" draggable={false} />
         </button>
       </div>
 
-      {/* 대표 아이템 선택 모달 */}
-      {slotIndex !== null && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-             onClick={() => setSlotIndex(null)}>
-          <div className="max-h-[70vh] w-full max-w-sm overflow-y-auto rounded-2xl bg-white p-4"
+      {/* ── 내 정보 변경 모달 ── */}
+      {showSettings && (
+        <div className="absolute inset-0 z-40 flex items-center justify-center px-[6%] backdrop-blur-sm"
+             onClick={() => { setShowSettings(false); setEditField(null) }}>
+          <div className="relative w-full rounded-[10px] border-2 border-border bg-surface px-[7%] py-[12%] shadow-[3px_3px_0_rgba(0,0,0,0.25)]"
                onClick={(e) => e.stopPropagation()}>
-            <div className="mb-3 flex items-center justify-between">
-              <h3 className="font-bold">대표 아이템 선택</h3>
-              <button onClick={() => pickItem(null)}
-                      className="text-xs text-gray-400 underline">비우기</button>
-            </div>
+            <button onClick={() => { setShowSettings(false); setEditField(null) }} aria-label="닫기"
+                    className="btn-icon absolute right-[3%] top-[3%] w-[8%]">
+              <img src="/assets/ui/XButton.png" alt="" className="block w-full" draggable={false} />
+            </button>
 
-            {myItems.length === 0 ? (
-              <p className="py-8 text-center text-sm text-gray-400">아이템이 없어요.</p>
+            <h3 className="text-center font-galmuri9 text-[20px] font-bold text-ink">내 정보 변경</h3>
+            <div className="mt-[6%] border-b-2 border-border" />
+
+            {editField === null ? (
+              <div className="mt-[9%] flex flex-col gap-[5%]">
+                <button onClick={() => startEdit('nickname')}
+                        className="btn-icon flex items-center justify-between py-4">
+                  <span className="font-galmuri11 text-[16px] text-ink">닉네임</span>
+                  <span className="flex items-center gap-2 font-galmuri11 text-[14px] text-ink-dim">
+                    {info.profile.nickname ?? '미설정'} <span className="text-[13px]">›</span>
+                  </span>
+                </button>
+
+                <button onClick={() => startEdit('birthday')}
+                        className="btn-icon flex items-center justify-between py-1">
+                  <span className="font-galmuri11 text-[16px] text-ink">생일</span>
+                  <span className="flex items-center gap-2 font-galmuri11 text-[14px] text-ink-dim">
+                    {fmtBirthday(info.profile.birthday)} <span className="text-[13px]">›</span>
+                  </span>
+                </button>
+
+                <p className="mt-[18%] text-center font-galmuri11 text-[11px] text-ink-dim">
+                  정보 변경 후 바로 프로필에 적용됩니다.
+                </p>
+
+                {/* 계정 관리 — 목업엔 없지만 들어갈 자리가 여기뿐이라 묶어둠 */}
+                <div className="mt-[6%] flex gap-2 border-t border-border pt-[5%]">
+                  <button onClick={handleLogout}
+                          className="flex-1 rounded-full border-2 border-border py-2 font-galmuri9 text-[14px] text-ink-dim">
+                    로그아웃
+                  </button>
+                  <button onClick={handleDeleteAccount}
+                          className="flex-1 rounded-full border-2 border-accent-2 py-2 font-galmuri9 text-[14px] text-accent-2">
+                    회원탈퇴
+                  </button>
+                </div>
+              </div>
             ) : (
-              <div className="grid grid-cols-3 gap-2">
-                {myItems.map((it) => {
-                  const rarity = RARITY_TABLE[it.rarity] || RARITY_TABLE.normal
-                  return (
-                    <button key={it.id} onClick={() => pickItem(it)}
-                            className="flex flex-col items-center">
-                      <img src={it.image_url} alt={it.name}
-                           className="pixel h-16 w-16 rounded-lg"
-                           style={{ backgroundColor: rarity.color + '22' }} />
-                      <span className="mt-1 line-clamp-1 text-[11px]">{it.name}</span>
-                    </button>
-                  )
-                })}
+              <div className="mt-[6%]">
+                <p className="font-galmuri11 text-[11px] text-ink">
+                  {editField === 'nickname' ? '닉네임' : '생일'}
+                </p>
+                {editField === 'nickname' ? (
+                  <input value={draft} maxLength={12}
+                         onChange={(e) => setDraft(e.target.value)}
+                         className="mt-2 w-full rounded-[6px] border-2 border-border px-2 py-1 font-galmuri11" />
+                ) : (
+                  <input type="date" value={draft}
+                         onChange={(e) => setDraft(e.target.value)}
+                         className="mt-2 w-full rounded-[6px] border-2 border-border px-2 py-1 font-galmuri11" />
+                )}
+
+                <div className="mt-[6%] flex gap-2">
+                  <button onClick={saveField} disabled={busy}
+                          className="flex-1 rounded-full border-2 border-line py-2 font-galmuri9 text-[11px] font-bold text-ink disabled:opacity-50"
+                          style={{ backgroundColor: '#E1FF96' }}>
+                    확인
+                  </button>
+                  <button onClick={() => setEditField(null)}
+                          className="flex-1 rounded-full border-2 border-border py-2 font-galmuri9 text-[11px] text-ink-dim">
+                    취소
+                  </button>
+                </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ── 대표 아이템 선택 모달 ── */}
+      {slotIndex !== null && (
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/40 px-[6%] backdrop-blur-sm"
+             onClick={() => setSlotIndex(null)}>
+          <div className="max-h-[85%] w-full overflow-hidden rounded-[10px] border-2 border-border bg-surface"
+               onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b-2 border-border px-4 py-4">
+              <h3 className="font-galmuri9 text-[18px]  text-ink">대표 아이템 선택</h3>
+              <button onClick={() => pickItem(null)}
+                      className="btn-icon font-galmuri11 text-[12px] text-ink-dim underline">
+                비우기
+              </button>
+            </div>
+
+            <div className="no-scrollbar max-h-[55dvh] overflow-y-auto p-3">
+              {myItems.length === 0 ? (
+                <p className="py-8 text-center font-galmuri11 text-[12px] text-ink-dim">아이템이 없어요.</p>
+              ) : (
+                <div className="grid grid-cols-3 gap-3">
+                  {myItems.map((it) => {
+                    const rarity = RARITY_TABLE[it.rarity] || RARITY_TABLE.normal
+                    return (
+                      <button key={it.id} onClick={() => pickItem(it)}
+                              className="btn-icon flex flex-col items-center">
+                        <img src={it.image_url} alt={it.name}
+                             className="pixel h-16 w-16 rounded-[5px] border-2 border-border"
+                             style={{ backgroundColor: rarity.color + '22' }} />
+                        <span className="mt-1 line-clamp-1 font-galmuri11 text-[10px] text-ink">{it.name}</span>
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
