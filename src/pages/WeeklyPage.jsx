@@ -123,7 +123,7 @@ export default function WeeklyPage() {
         </div>
       </div>
 
-      <p className="mt-[3%] flex-none text-center font-galmuri11 text-[9px] text-white">
+      <p className="mt-[3%] flex-none text-center font-galmuri11 text-[9px] text-black">
         이번 주 아이템 {current.itemCount}개
         {current.bonusCount > 0 && ` · 보너스 +${current.bonusCount}`}
       </p>
@@ -145,7 +145,7 @@ export default function WeeklyPage() {
         )}
 
         {!current.claimed && !current.isSunday && (
-          <p className="mt-2 text-center font-galmuri11 text-[9px] text-black">
+          <p className="mt-2 text-center font-galmuri11 text-[9px] text-ink-dim">
             평가는 일요일에 열려요
           </p>
         )}
