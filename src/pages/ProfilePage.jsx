@@ -194,7 +194,10 @@ export default function ProfilePage() {
               <img src="/assets/ui/XButton.png" alt="" className="block w-full" draggable={false} />
             </button>
 
-            <h3 className="text-center font-galmuri9 text-[20px] font-bold text-ink">내 정보 변경</h3>
+            <h3 className="text-center font-galmuri9 text-[24px] text-white text-outline"
+                style={{ '--outline': '#1f241a' }}>
+              내 정보 변경
+            </h3>
             <div className="mt-[6%] border-b-2 border-border" />
 
             {editField === null ? (
@@ -215,12 +218,12 @@ export default function ProfilePage() {
                   </span>
                 </button>
 
-                <p className="mt-[18%] text-center font-galmuri11 text-[11px] text-ink-dim">
+                <p className="mt-[20%] text-center font-galmuri11 text-[11px] text-ink-dim">
                   정보 변경 후 바로 프로필에 적용됩니다.
                 </p>
 
                 {/* 계정 관리 — 목업엔 없지만 들어갈 자리가 여기뿐이라 묶어둠 */}
-                <div className="mt-[6%] flex gap-2 border-t border-border pt-[5%]">
+                <div className="translate-y-[14px] mt-[6%] flex gap-2 border-t border-border pt-[5%]">
                   <button onClick={handleLogout}
                           className="flex-1 rounded-full border-2 border-border py-2 font-galmuri9 text-[14px] text-ink-dim">
                     로그아웃
