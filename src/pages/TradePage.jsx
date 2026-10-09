@@ -7,6 +7,7 @@ import {
   getReceivedItems, getPendingTradeCount,
 } from '../lib/tradeService'
 import { RARITY_TABLE, STAT_KEYS, STAT_LABELS, statPercent } from '../game/statSystem'
+import { useNavigate } from 'react-router-dom'
 
 const FAIL_MESSAGES = {
   not_pending: '이미 처리된 아이템이에요.',
@@ -18,12 +19,14 @@ const FAIL_MESSAGES = {
 export default function TradePage() {
   const { session } = useAuth()
   const myId = session?.user.id
-
+  const navigate = useNavigate()
   const [friends, setFriends] = useState([])
   const [items, setItems] = useState([])
   const [selectedFriend, setSelectedFriend] = useState(null)
   const [selectedItem, setSelectedItem] = useState(null)
   const [pendingCount, setPendingCount] = useState(0)
+
+  const [picker, setPicker] = useState(null)       // 'item' | 'friend' | null
 
   const [showBox, setShowBox] = useState(false)
   const [boxTab, setBoxTab] = useState('pending')   // pending | received
@@ -136,66 +139,163 @@ export default function TradePage() {
   const label = (p) => p?.nickname ?? p?.full_name ?? p?.email ?? '알 수 없음'
 
   return (
-    <div className="p-4">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-bold">아이템 교환소</h2>
-        <button onClick={openBox}
-                className="relative rounded bg-gray-200 px-3 py-1.5 text-sm font-bold">
-          보관함
+    <div className="flex h-full flex-col px-[5%] py-[4%]">
+
+      {/* ── 제목 ── */}
+      <h2 className="mt-[20%] flex-none text-center font-galmuri9 text-[26px] font-bold text-accent-2 [text-shadow:_-1.5px_0_white,_0_1.5px_white,_1.5px_0_white,_0_-1.5px_white]"
+          style={{ '--outline': '#ffffff' }}>
+        교환소
+      </h2>
+
+      {/* ── 교환 카드 ── */}
+      <div className="mt-[28%] flex-none rounded-[16px] bg-surface p-[6%] shadow-[3px_3px_0_rgba(0,0,0,0.15)]">
+        <div className="flex items-start justify-between">
+
+          {/* 아이템 슬롯 */}
+          <button onClick={() => setPicker('item')}
+                  className="btn-icon flex w-[38%] flex-col items-center">
+            <div className="flex aspect-square w-full items-center justify-center overflow-hidden rounded-full border-2 border-border bg-surface-2 p-[12%]">
+              {selectedItem ? (
+                <img src={selectedItem.image_url} alt={selectedItem.name}
+                     className="pixel max-h-full max-w-full object-contain" draggable={false} />
+              ) : null}
+            </div>
+            <span className="mt-[12%] w-full truncate rounded-full border-2 border-border bg-surface-2 py-1 text-center font-galmuri11 text-[11px] text-ink">
+              {selectedItem ? selectedItem.name : '아이템 선택'}
+            </span>
+          </button>
+
+          {/* 화살표 — 에셋 나오면 <img>로 교체 */}
+          <span className="mt-[16%] font-galmuri9 text-[22px] text-ink">▶</span>
+
+          {/* 친구 슬롯 */}
+          <button onClick={() => setPicker('friend')}
+                  className="btn-icon flex w-[38%] flex-col items-center">
+            <div className="flex aspect-square w-full items-center justify-center overflow-hidden rounded-full border-2 border-border bg-surface-2 p-[12%]">
+              {selectedFriend ? (
+                <img src="/assets/char/Portrait.png" alt=""
+                     className="h-full w-full rounded-full object-cover" draggable={false} />
+              ) : null}
+            </div>
+            <span className="mt-[12%] w-full truncate rounded-full border-2 border-border bg-surface-2 py-1 text-center font-galmuri11 text-[11px] text-ink">
+              {selectedFriend ? label(selectedFriend) : '친구 선택'}
+            </span>
+          </button>
+        </div>
+
+        {/* 전송 버튼 — 에셋 나오면 <img>로 교체 */}
+        <button onClick={handleTrade}
+                disabled={!selectedFriend || !selectedItem || busy}
+                className="mx-auto mt-[9%] block w-[56%] rounded-full border-2 border-line bg-accent py-2.5 font-galmuri9 text-[18px] font-bold text-ink shadow-[2px_2px_0_rgba(0,0,0,0.25)] disabled:border-border disabled:bg-surface-2 disabled:text-ink-dim disabled:shadow-none">
+          {busy ? '보내는 중...' : '전송!'}
+        </button>
+      </div>
+
+      {/* ── 박사 + 말풍선 ── */}
+      <div className="mt-[8%] flex flex-none items-start">
+        <img src="/assets/char/hakase_test.png" alt=""
+             className="pixel w-[28%] flex-none select-none" draggable={false} />
+
+        <div className="relative mt-[6%] w-[60%]">
+          <img src="/assets/ui/TestBubble.png" alt=""
+               className="block w-full select-none" draggable={false} />
+          <div className="absolute inset-x-0 bottom-[14%] left-[16%] top-0 flex items-center justify-center pr-[6%]">
+            <p className="text-center font-galmuri11 text-[11px] leading-relaxed text-ink">
+              우주는 참 넓지않나<br />.......<br />오늘은 누구와 교환할건가?
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* ── 하단: 뒤로가기 / 보관함 ── */}
+      <div className="mt-auto flex flex-none items-center justify-between pt-[4%]">
+        <button onClick={() => navigate('/')} aria-label="홈으로" className="w-[13%]">
+          <img src="/assets/ui/Back.png" alt="" className="block w-full select-none" draggable={false} />
+        </button>
+
+        <button onClick={openBox} aria-label="보관함"
+                className="btn-icon relative w-[30%] min-w-[110px]">
+          <img src="/assets/ui/StorageBox.png" alt="보관함"
+               className="block h-auto w-full select-none" draggable={false} />
           {pendingCount > 0 && (
-            <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-400 px-1 text-[10px] text-white">
+            <span className="absolute -right-1.5 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full border border-line bg-accent-2 px-1 font-galmuri9 text-[8px] text-white">
               {pendingCount}
             </span>
           )}
         </button>
       </div>
 
-      <section className="mb-5">
-        <h3 className="mb-2 text-sm font-bold text-gray-500">1. 보낼 친구</h3>
-        {friends.length === 0 ? (
-          <p className="text-sm text-gray-400">친구가 없어요. 먼저 친구를 맺어보세요.</p>
-        ) : (
-          <div className="flex flex-wrap gap-2">
-            {friends.map((f) => (
-              <button key={f.id} onClick={() => setSelectedFriend(f)}
-                className={`rounded-full border px-3 py-1.5 text-sm ${
-                  selectedFriend?.id === f.id ? 'border-green-500 bg-green-100 font-bold' : ''
-                }`}>
-                {label(f)}
+
+
+      {/* ── 아이템 / 친구 선택 창 ── */}
+      {picker && (
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 px-6"
+             onClick={() => setPicker(null)}>
+          <div className="max-h-[70dvh] w-full max-w-[330px] overflow-hidden rounded-[10px] border-2 border-border bg-surface"
+               onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b-2 border-border px-4 py-2">
+              <h3 className="font-galmuri9 text-[13px] font-bold text-ink">
+                {picker === 'item' ? '보낼 아이템' : '보낼 친구'}
+              </h3>
+              <button onClick={() => setPicker(null)} aria-label="닫기"
+                      className="btn-icon w-[22px]">
+                <img src="/assets/ui/XButton.png" alt="" className="block w-full" draggable={false} />
               </button>
-            ))}
-          </div>
-        )}
-      </section>
+            </div>
 
-      <section className="mb-5">
-        <h3 className="mb-2 text-sm font-bold text-gray-500">2. 보낼 아이템</h3>
-        {items.length === 0 ? (
-          <p className="text-sm text-gray-400">아직 만든 아이템이 없어요.</p>
-        ) : (
-          <div className="grid grid-cols-3 gap-2">
-            {items.map((it) => {
-              const rarity = RARITY_TABLE[it.rarity] || RARITY_TABLE.normal
-              return (
-                <button key={it.id} onClick={() => setSelectedItem(it)}
-                  className={`flex flex-col items-center rounded-xl border p-2 ${
-                    selectedItem?.id === it.id ? 'border-green-500 bg-green-50' : ''
-                  }`}>
-                  <img src={it.image_url} alt={it.name}
-                       className="pixel h-14 w-14 rounded"
-                       style={{ backgroundColor: rarity.color + '22' }} />
-                  <span className="mt-1 line-clamp-1 text-[11px]">{it.name}</span>
-                </button>
-              )
-            })}
+            <div className="no-scrollbar max-h-[55dvh] overflow-y-auto p-3">
+              {picker === 'item' ? (
+                items.length === 0 ? (
+                  <p className="py-8 text-center font-galmuri11 text-[10px] text-ink-dim">
+                    아직 만든 아이템이 없어요.
+                  </p>
+                ) : (
+                  <div className="grid grid-cols-3 gap-2">
+                    {items.map((it) => {
+                      const rarity = RARITY_TABLE[it.rarity] || RARITY_TABLE.normal
+                      return (
+                        <button key={it.id}
+                                onClick={() => { setSelectedItem(it); setPicker(null) }}
+                                className="btn-icon flex flex-col items-center">
+                          <img src={it.image_url} alt={it.name}
+                               className={`pixel h-16 w-16 rounded-[6px] border-2 ${
+                                 selectedItem?.id === it.id ? 'border-accent-2' : 'border-border'
+                               }`}
+                               style={{ backgroundColor: rarity.color + '22' }} />
+                          <span className="mt-1 line-clamp-1 font-galmuri11 text-[9px] text-ink">{it.name}</span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                )
+              ) : (
+                friends.length === 0 ? (
+                  <p className="py-8 text-center font-galmuri11 text-[10px] text-ink-dim">
+                    친구가 없어요. 먼저 친구를 맺어보세요.
+                  </p>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    {friends.map((f) => (
+                      <button key={f.id}
+                              onClick={() => { setSelectedFriend(f); setPicker(null) }}
+                              className={`flex w-full items-center gap-3 rounded-[6px] border-2 p-2 text-left ${
+                                selectedFriend?.id === f.id ? 'border-accent-2 bg-surface-2' : 'border-transparent bg-surface-2'
+                              }`}>
+                        <img src="/assets/char/Portrait.png" alt=""
+                             className="h-12 w-12 flex-none rounded-full border-2 border-border bg-white object-cover"
+                             draggable={false} />
+                        <span className="min-w-0 flex-1 truncate font-galmuri9 text-[12px] font-bold text-ink">
+                          {label(f)}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )
+              )}
+            </div>
           </div>
-        )}
-      </section>
-
-      <button onClick={handleTrade} disabled={!selectedFriend || !selectedItem || busy}
-              className="w-full rounded-xl bg-green-400 py-3 font-bold disabled:opacity-40">
-        {busy ? '보내는 중...' : '전송!'}
-      </button>
+        </div>
+      )}
 
       {showBox && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"

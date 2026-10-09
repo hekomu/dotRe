@@ -6,17 +6,16 @@ import NutsBar from '../components/NutsBar'
 
 const gradeColor = (g) => GRADE_TABLE.find((x) => x.grade === g)?.color ?? '#9ca3af'
 
-/** 단상(실험실 캡슐) — 아이템이 없으면 빈 캡슐만 */
 function Pedestal({ item }) {
   return (
     <div className="relative w-[24%] flex-none">
-      {/* 캡슐 */}
+      {/* 캡슐 — 아이템보다 위 레이어 */}
       <img src="/assets/ui/Pedestal.png" alt=""
-           className="block w-full select-none" draggable={false} />
+           className="relative z-10 block w-full select-none" draggable={false} />
 
-      {/* 아이템 — 캡슐 유리 안쪽에 들어간 모양 */}
+      {/* 아이템 — 캡슐 뒤로 */}
       {item && (
-        <div className="absolute inset-x-0 bottom-[22%] top-0 flex items-center justify-center">
+        <div className="absolute inset-x-0 bottom-[22%] top-0 z-0 flex items-center justify-center">
           <img src={item.image_url} alt={item.name}
                className="pixel max-h-[60%] max-w-[60%] object-contain" draggable={false} />
         </div>
