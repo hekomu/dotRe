@@ -89,7 +89,7 @@ export default function RoomEditPage() {
   const nameOf = (r) => (tab === 'item' ? r.items?.name : r.furniture_catalog?.name)
 
   return (
-     <div className="no-scrollbar relative flex h-full flex-col overflow-y-auto px-[4%] py-[3%]">
+     <div className="no-scrollbar relative flex h-full flex-col overflow-y-auto px-[3%] py-[0%]">
 
       <div className="no-scrollbar relative flex h-full flex-col overflow-y-auto px-[4%] py-[3%]">
 
@@ -193,7 +193,7 @@ export default function RoomEditPage() {
                className="block w-full select-none" draggable={false} />
 
           {/* 아이템 / 인테리어 탭 — 패널 위쪽에 걸침 */}
-          <div className="absolute inset-x-0 -top-[7%] mx-auto w-[62%]">
+          <div className="absolute inset-x-0 -top-[9%] mx-auto w-[62%]">
             <img src={tab === 'item' ? '/assets/ui/Room_ItemPick.png' : '/assets/ui/Room_InteriorPick.png'}
                  alt={tab === 'item' ? '아이템' : '인테리어'}
                  className="block w-full select-none" draggable={false} />
@@ -204,8 +204,8 @@ export default function RoomEditPage() {
           </div>
 
           {/* 격자 — 이름 없이 이미지만 */}
-          <div className="no-scrollbar absolute inset-x-[4%] bottom-[5%] top-[14%] overflow-y-auto">
-            <div className="grid grid-cols-5 gap-[3%]">
+          <div className="no-scrollbar absolute inset-x-[3%] bottom-[4%] top-[11%] overflow-y-auto">
+            <div className="grid grid-cols-5 gap-[2%]">
               {slots.map((r, i) =>
                 r ? (
                   <button key={r.id}
