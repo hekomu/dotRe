@@ -15,7 +15,7 @@ const fmtBirthday = (b) => {
 /** 정보 캡슐 한 줄 */
 function InfoBar({ label, value }) {
   return (
-    <div className="relative w-full">
+    <div className="translate-y-[10px] relative w-full">
       <img src="/assets/ui/ProfileBar.png" alt="" className="block w-full select-none" draggable={false} />
       <div className="absolute inset-x-[5%] inset-y-0 flex items-center justify-between">
         <span className="font-galmuri11 text-[15px] text-ink">{label}</span>
@@ -119,7 +119,8 @@ export default function ProfilePage() {
     <div className="relative flex h-full flex-col px-[5%] py-[4%]">
 
       {/* ── 닉네임 ── */}
-      <p className="flex-none text-center absolute left-38 top-33 font-galmuri9 text-[18px] font-bold text-white [text-shadow:_-2px_0_#1f241a,_0_2px_#1f241a,_2px_0_#1f241a,_0_-2px_#1f241a]">
+     <p className="absolute left-0 right-0 top-[17%] flex-none text-center font-galmuri9 text-[18px] text-black text-outline"
+         style={{ '--outline': '#FFFF' }}>
         {nickname}
       </p>
 
@@ -143,18 +144,23 @@ export default function ProfilePage() {
       </div>
 
       {/* ── 정보 카드 ── */}
-      <div className="mt-auto flex-none rounded-[12px] border-2 border-border bg-surface p-[4%]">
-        <div className="flex flex-col gap-[3%]">
+      <div className="mt-auto translate-y-[-15px] flex-none rounded-[12px] border-2 border-border bg-surface p-[4%]">
+        <div className="flex flex-col gap-2">
           <InfoBar label="플레이어 ID" value={info.profile.email ?? session?.user?.email ?? '-'} />
           <InfoBar label="생일" value={fmtBirthday(info.profile.birthday)} />
           <InfoBar label="일기작성 횟수" value={`${info.diaryCount ?? 0}회`} />
         </div>
 
         {/* 대표 아이템 */}
-        <img src="/assets/ui/Profile_ItemBar.png" alt="대표 아이템"
-             className="mt-[15%] w-[35%] select-none" draggable={false} />
+        <div className="relative translate-y-[-12px] mt-[15%] w-[35%]">
+          <img src="/assets/ui/Profile_ItemBar.png" alt=""
+               className="block w-full select-none" draggable={false} />
+          <span className="absolute inset-x-0 bottom-[12%] top-0 flex items-center justify-center font-galmuri9 text-[15px] text-ink">
+            대표 아이템
+          </span>
+        </div>
 
-        <div className="mt-[5%] flex gap-[4%]">
+        <div className="translate-y-[-15px] mt-[5%] flex gap-[8%]">
           {repSlots.map((it, i) => (
             <button key={i} onClick={() => openSlot(i)} aria-label={`대표 아이템 ${i + 1}`}
                     className="btn-icon relative w-[28%]">
@@ -171,7 +177,7 @@ export default function ProfilePage() {
       </div>
 
       {/* ── 뒤로가기 ── */}
-      <div className="mt-[3%] flex flex-none items-center">
+      <div className="translate-y-[30px] mt-[-6%] flex flex-none items-center">
         <button onClick={() => navigate('/')} aria-label="홈으로" className="btn-icon w-[15%]">
           <img src="/assets/ui/Back.png" alt="" className="block w-full select-none" draggable={false} />
         </button>

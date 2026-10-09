@@ -6,8 +6,9 @@ const WINDOW_RATIO = 1.7   // 명세서 목업 창 비율(세로÷가로) — �
 // WindowBar.png 실제 크기(1610x318) 비율 — 콘텐츠가 시작할 위치를 여기서 자동 계산
 const WINDOWBAR_RATIO = 318 / 1610 // ≈ 0.1975
 
-/** bare=true → 창 크기/테두리만 쓰고 타이틀바·메뉴탭은 그리지 않음 (상점 등) */
-export default function RetroWindow({ title = 'Dotre Lab - Report', activeTab = null, bare = false, children }) {
+/** bare=true → 창 크기/테두리만 쓰고 타이틀바·메뉴탭은 그리지 않음 (상점 등)
+ *  bg        → 창 본체 전체 배경 이미지. 타이틀바 뒤까지 덮는다 (방 편집 등) */
+export default function RetroWindow({ title = 'Dotre Lab - Report', activeTab = null, bare = false, bg = null, children }) {
   return (
     <div className="flex min-h-0 flex-1 items-center justify-center">
       <div
@@ -16,19 +17,33 @@ export default function RetroWindow({ title = 'Dotre Lab - Report', activeTab = 
       >
         {/* 흰 배경 — 창 맨 위(0)부터 시작. 이미지가 이 위에 겹쳐서 얹히므로 틈이 생길 수가 없음 */}
         <div
-          className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[10px] border-2 border-border bg-surface text-black"
+          className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-[10px] border-2 border-border bg-surface text-black"
           style={{ backgroundColor: '#ffffff' }}
         >
+          {/* 창 배경 — 타이틀바 투명 영역 뒤로 흰색이 비치지 않게 맨 아래에 깔아둔다 */}
+          {bg && (
+            <img
+              src={bg}
+              alt=""
+              className="pointer-events-none absolute inset-0 h-full w-full select-none object-cover"
+              draggable={false}
+            />
+          )}
+
           {/* 이미지가 덮을 만큼만 투명 여백 — 비율로 계산해서 항상 이미지 높이랑 정확히 일치.
               bare일 땐 타이틀바가 없으므로 이 여백도 없앤다 */}
           {!bare && (
             <div
-              className="flex-none"
+              className="relative flex-none"
               style={{ paddingTop: `${(WINDOWBAR_RATIO * 100).toFixed(2)}%` }}
               aria-hidden="true"
             />
           )}
-          {children}
+
+          {/* 배경 위로 올라오도록 relative */}
+          <div className="relative flex min-h-0 flex-1 flex-col">
+            {children}
+          </div>
         </div>
 
         {/* 타이틀바+탭줄 이미지 — 흰 배경 위에 그대로 겹쳐서 얹음 */}

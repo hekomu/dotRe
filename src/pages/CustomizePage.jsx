@@ -58,15 +58,22 @@ export default function CustomizePage() {
   return (
     <div className="relative flex h-full flex-col px-[4%] py-[4%]">
 
+
+       {/* ── 제목 ── */}
+      <h2 className="mx-auto translate-y-[35px] flex-none border-b-2 border-accent-2 pb-0.5 font-galmuri9 text-[26px] text-accent-2 text-outline"
+          style={{ '--outline': '#ffffff' }}>
+        커스터마이징
+      </h2>
+
       {/* ── 아바타 ── */}
-      <div className="flex flex-none justify-center pt-[6%]">
+      <div className="flex flex-none justify-center pt-[9%]">
         {/* 임시 아바타 — 파츠 에셋 나오면 equipped 이미지들을 겹쳐서 교체 */}
         <img src="/assets/char/Avatar.png" alt=""
-             className="pixel absolute top-32 w-[35%] select-none" draggable={false} />
+             className="pixel absolute top-38 w-[35%] select-none" draggable={false} />
       </div>
 
       {/* ── 파츠 패널 ── */}
-      <div className="mt-auto flex-none rounded-[12px] border-2 border-border bg-surface p-[3%]">
+      <div className="translate-y-[20px] mt-auto flex-none rounded-[12px] border-2 border-border bg-surface p-[3%]">
 
         {/* 얼굴 / 헤어 / 의상 탭 */}
         <div className="relative">
@@ -113,7 +120,7 @@ export default function CustomizePage() {
       </div>
 
       {/* ── 뒤로가기 ── */}
-      <div className="mt-[3%] flex flex-none items-center">
+      <div className="translate-y-[30px] mt-[3%] flex flex-none items-center">
         <button onClick={() => navigate('/profile')} aria-label="프로필로" className="btn-icon w-[14%]">
           <img src="/assets/ui/Back.png" alt="" className="block w-full select-none" draggable={false} />
         </button>

@@ -194,3 +194,13 @@ input, textarea, select { font-size: 16px; }
 
 /* 상점처럼 배경이 창 끝까지 꽉 차야 하는 페이지 */
 .shell-main-flush { padding: 0; }
+
+
+/* 도트 글자 테두리 — 색은 --outline 변수로 지정 */
+.text-outline {
+  text-shadow:
+    -2px  0   var(--outline), 2px  0   var(--outline),
+     0   -2px var(--outline), 0    2px var(--outline),
+    -2px -2px var(--outline), 2px -2px var(--outline),
+    -2px  2px var(--outline), 2px  2px var(--outline);
+}

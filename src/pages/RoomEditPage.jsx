@@ -89,26 +89,22 @@ export default function RoomEditPage() {
   const nameOf = (r) => (tab === 'item' ? r.items?.name : r.furniture_catalog?.name)
 
   return (
-    <div className="relative h-full overflow-hidden">
-      {/* 페이지 배경 */}
-      <img src="/assets/ui/RoomSetting_Bg.png" alt=""
-           className="pointer-events-none absolute inset-0 h-full w-full object-cover select-none"
-           draggable={false} />
+     <div className="no-scrollbar relative flex h-full flex-col overflow-y-auto px-[4%] py-[3%]">
 
-      <div className="relative flex h-full flex-col px-[4%] py-[3%]">
+      <div className="no-scrollbar relative flex h-full flex-col overflow-y-auto px-[4%] py-[3%]">
 
         {/* ── 헤더: 뒤로 / 방 편집 / 저장 ── */}
         <div className="flex flex-none items-center justify-between">
-          <button onClick={() => navigate('/')} aria-label="홈으로" className="btn-icon w-[13%]">
+          <button onClick={() => navigate('/')} aria-label="홈으로" className="btn-icon w-[12%]">
             <img src="/assets/ui/Back.png" alt="" className="block w-full select-none" draggable={false} />
           </button>
 
-          <h2 className="border-b-2 border-accent-2 pb-0.5 font-galmuri9 text-[24px] font-bold text-accent-2">
-            방 편집
+          <h2 className="mx-auto text-center flex-none translate-x-[12px] translate-y-[-5px] border-b-2 border-accent-2 pb-0.5 font-galmuri9 text-[26px] text-white text-outline"
+          style={{ '--outline': '#ED2F89' }}>
+          방 편집
           </h2>
-
           <button onClick={handleSave} disabled={!dirty || saving}
-                  aria-label="저장" className="btn-icon w-[24%] disabled:opacity-40">
+                  aria-label="저장" className="btn-icon w-[23%] disabled:opacity-40">
             <img src="/assets/ui/RoomSave.png" alt="저장" className="block w-full select-none" draggable={false} />
           </button>
         </div>
@@ -155,11 +151,11 @@ export default function RoomEditPage() {
 
         {/* ── 선택한 물건 조작 ── */}
         {sel && (
-          <div className="mt-[3%] flex-none rounded-[8px] border-2 border-border bg-white/80 p-3">
+          <div className="mt-[3%] flex-none rounded-[8px] border-2 border-border bg-white/80 p-2">
             <div className="flex items-center gap-2">
 
               <button onClick={() => update(selected.kind, sel.id, { flipped: !sel.flipped })}
-                      className="btn-icon rounded-[6px] border border-border px-4 py-1 font-galmuri9 text-[12px] text-ink"
+                      className="translate-x-[39px] btn-icon rounded-[6px] border border-border px-4 py-1 font-galmuri9 text-[12px] text-ink"
                       style={{ backgroundColor: '#E1FF96' }}>
                 좌우반전
               </button>
@@ -167,12 +163,12 @@ export default function RoomEditPage() {
                         const maxZ = Math.max(0, ...itemRows.map((r) => r.z ?? 0), ...furnRows.map((r) => r.z ?? 0))
                         update(selected.kind, sel.id, { z: maxZ + 1 })
                       }}
-                      className="btn-icon rounded-[6px] border border-border px-4 py-1 font-galmuri9 text-[12px] text-ink"
+                      className="translate-x-[44px] btn-icon rounded-[6px] border border-border px-4 py-1 font-galmuri9 text-[12px] text-ink"
                       style={{ backgroundColor: '#E1FF96' }}>
                 앞으로
               </button>
               <button onClick={() => { update(selected.kind, sel.id, { placed: false }); setSelected(null) }}
-                      className="btn-icon rounded-[6px] border border-border px-4 py-1 font-galmuri9 text-[12px] text-accent-2"
+                      className="translate-x-[49px] btn-icon rounded-[6px] border border-border px-4 py-1 font-galmuri9 text-[12px] text-accent-2"
                       style={{ backgroundColor: '#E1FF96' }}>
                 치우기
               </button>
