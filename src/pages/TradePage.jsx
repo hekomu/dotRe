@@ -148,20 +148,29 @@ export default function TradePage() {
       </h2>
 
       {/* ── 교환 카드 ── */}
-      <div className="mt-[28%] flex-none rounded-[16px] bg-surface p-[6%] shadow-[3px_3px_0_rgba(0,0,0,0.15)]">
+      <div className="mt-[23%] flex-none rounded-[16px] bg-surface p-[6%] shadow-[3px_3px_0_rgba(0,0,0,0.15)]">
         <div className="flex items-start justify-between">
 
           {/* 아이템 슬롯 */}
-          <button onClick={() => setPicker('item')}
-                  className="btn-icon flex w-[38%] flex-col items-center">
+          <button onClick={() => setPicker('item')} aria-label="아이템 선택"
+                  className="btn-icon flex w-[34%] flex-col items-center">
             <div className="flex aspect-square w-full items-center justify-center overflow-hidden rounded-full border-2 border-border bg-surface-2 p-[12%]">
-              {selectedItem ? (
+              {selectedItem && (
                 <img src={selectedItem.image_url} alt={selectedItem.name}
                      className="pixel max-h-full max-w-full object-contain" draggable={false} />
-              ) : null}
+              )}
             </div>
-            <span className="mt-[12%] w-full truncate rounded-full border-2 border-border bg-surface-2 py-1 text-center font-galmuri11 text-[11px] text-ink">
-              {selectedItem ? selectedItem.name : '아이템 선택'}
+
+            <span className="relative mt-[12%] block w-full">
+              <img src="/assets/ui/SelectItem.png" alt=""
+                   className="block w-full select-none" draggable={false} />
+              <span className="absolute inset-x-[8%] inset-y-0 flex items-center justify-center">
+                <span className={`w-full truncate text-center font-galmuri11 text-[14px] ${
+                  selectedItem ? 'text-ink' : 'text-ink-dim'
+                }`}>
+                  {selectedItem ? selectedItem.name : '아이템 선택'}
+                </span>
+              </span>
             </span>
           </button>
 
@@ -169,30 +178,42 @@ export default function TradePage() {
           <span className="mt-[16%] font-galmuri9 text-[22px] text-ink">▶</span>
 
           {/* 친구 슬롯 */}
-          <button onClick={() => setPicker('friend')}
-                  className="btn-icon flex w-[38%] flex-col items-center">
+          <button onClick={() => setPicker('friend')} aria-label="친구 선택"
+                  className="btn-icon flex w-[34%] flex-col items-center">
             <div className="flex aspect-square w-full items-center justify-center overflow-hidden rounded-full border-2 border-border bg-surface-2 p-[12%]">
-              {selectedFriend ? (
+              {selectedFriend && (
                 <img src="/assets/char/Portrait.png" alt=""
                      className="h-full w-full rounded-full object-cover" draggable={false} />
-              ) : null}
+              )}
             </div>
-            <span className="mt-[12%] w-full truncate rounded-full border-2 border-border bg-surface-2 py-1 text-center font-galmuri11 text-[11px] text-ink">
-              {selectedFriend ? label(selectedFriend) : '친구 선택'}
+
+            <span className="relative mt-[12%] block w-full">
+              <img src="/assets/ui/SelectFriend.png" alt=""
+                   className="block w-full select-none" draggable={false} />
+              <span className="absolute inset-x-[8%] inset-y-0 flex items-center justify-center">
+                <span className={`w-full truncate text-center font-galmuri11 text-[14px] ${
+                  selectedFriend ? 'text-ink' : 'text-ink-dim'
+                }`}>
+                  {selectedFriend ? label(selectedFriend) : '친구 선택'}
+                </span>
+              </span>
             </span>
           </button>
         </div>
 
-        {/* 전송 버튼 — 에셋 나오면 <img>로 교체 */}
+        {/* 전송 버튼 */}
         <button onClick={handleTrade}
                 disabled={!selectedFriend || !selectedItem || busy}
-                className="mx-auto mt-[9%] block w-[56%] rounded-full border-2 border-line bg-accent py-2.5 font-galmuri9 text-[18px] font-bold text-ink shadow-[2px_2px_0_rgba(0,0,0,0.25)] disabled:border-border disabled:bg-surface-2 disabled:text-ink-dim disabled:shadow-none">
-          {busy ? '보내는 중...' : '전송!'}
+                aria-label="전송"
+                className="btn-icon mx-auto mt-[9%] block w-[48%] disabled:opacity-40">
+          <img src="/assets/ui/Send.png" alt="전송"
+               className="block w-full select-none" draggable={false} />
         </button>
       </div>
 
+
       {/* ── 박사 + 말풍선 ── */}
-      <div className="mt-[8%] flex flex-none items-start">
+      <div className="mt-[5%] flex flex-none items-start">
         <img src="/assets/char/hakase_test.png" alt=""
              className="pixel w-[28%] flex-none select-none" draggable={false} />
 
@@ -200,7 +221,7 @@ export default function TradePage() {
           <img src="/assets/ui/TestBubble.png" alt=""
                className="block w-full select-none" draggable={false} />
           <div className="absolute inset-x-0 bottom-[14%] left-[16%] top-0 flex items-center justify-center pr-[6%]">
-            <p className="text-center font-galmuri11 text-[11px] leading-relaxed text-ink">
+            <p className="text-center font-galmuri11 text-[13px] leading-relaxed text-ink">
               우주는 참 넓지않나<br />.......<br />오늘은 누구와 교환할건가?
             </p>
           </div>

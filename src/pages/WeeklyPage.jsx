@@ -8,7 +8,7 @@ const gradeColor = (g) => GRADE_TABLE.find((x) => x.grade === g)?.color ?? '#9ca
 
 function Pedestal({ item }) {
   return (
-    <div className="relative w-[24%] flex-none">
+    <div className="relative w-[22%] flex-none">
       {/* 캡슐 — 아이템보다 위 레이어 */}
       <img src="/assets/ui/Pedestal.png" alt=""
            className="relative z-10 block w-full select-none" draggable={false} />
@@ -23,6 +23,7 @@ function Pedestal({ item }) {
     </div>
   )
 }
+
 export default function WeeklyPage() {
   const navigate = useNavigate()
   const [data, setData] = useState(null)
@@ -74,9 +75,9 @@ export default function WeeklyPage() {
   const slots = Array.from({ length: 7 }, (_, i) => current.items[i] ?? null)
 
   return (
-    <div className="flex h-full flex-col px-[4%] py-[3%]">
+    <div className="flex h-full max-h-full min-h-0 flex-col overflow-hidden px-[4%] py-[3%]">
 
-       {/* ── 상단 줄: 너트 / 도움말 ── */}
+      {/* ── 상단 줄: 너트 / 도움말 ── */}
       <div className="flex flex-none items-start justify-between">
         <NutsBar value={data.nuts} widthClass="w-[32%]" textClass="text-[18px]" />
         {/* 도움말 버튼 — 주간평가용 모달 만들면 onClick 연결 */}
@@ -86,34 +87,38 @@ export default function WeeklyPage() {
       </div>
 
       {/* ── 제목 ── */}
-      <h2 className="mt-[6%] flex-none text-center font-galmuri9 text-[26px] font-bold text-accent-2 [text-shadow:_-1.5px_0_white,_0_1.5px_white,_1.5px_0_white,_0_-1.5px_white]">
+      <h2 className="mt-[3%] flex-none text-center font-galmuri9 text-[26px] font-bold text-accent-2 [text-shadow:_-1.5px_0_white,_0_1.5px_white,_1.5px_0_white,_0_-1.5px_white]">
         주간 평가
       </h2>
 
-      {/* ── 마스코트 + 말풍선 ── */}
-      <div className="mt-[20%] flex flex-none items-start">
-        <img src="/assets/char/hakase_test.png" alt=""
-             className="pixel w-[30%] flex-none select-none" draggable={false} />
+      <div className="min-h-0 flex-[1.4]" />
 
-        <div className="relative mt-[10%] min-w-0 flex-1">
+      {/* ── 마스코트 + 말풍선 ── */}
+      <div className="flex flex-none items-start">
+        <img src="/assets/char/hakase_test.png" alt=""
+             className="pixel w-[26%] flex-none select-none" draggable={false} />
+
+        <div className="relative mt-[6%] w-[58%] flex-none">
           <img src="/assets/ui/TestBubble.png" alt=""
-               className="block w-full select-none " draggable={false} />
-          <div className="absolute inset-0 flex flex-col items-center justify-center px-[12%] text-center">
-            <p className="font-galmuri11 text-[15px] leading-relaxed text-ink">
+               className="block w-full select-none" draggable={false} />
+          <div className="absolute inset-y-0 left-[16%] right-[6%] flex flex-col items-center justify-center text-center">
+            <p className="font-galmuri11 text-[12px] leading-relaxed text-ink">
               이번 주 주간평가<br />보너스 아이템은...
             </p>
-            <p className="mt-1 font-galmuri9 text-[20px] font-bold text-white">
+            <p className="mt-1 font-galmuri9 text-[17px] font-bold text-white">
               <span className="[text-shadow:_-1.5px_0_var(--color-accent-2),_0_1.5px_var(--color-accent-2),_1.5px_0_var(--color-accent-2),_0_-1.5px_var(--color-accent-2)]">
                 {current.bonusLabel}
               </span>
-              <span className="ml-1 font-galmuri11 text-[15px] font-normal text-ink">(이)라네..</span>
+              <span className="ml-1 font-galmuri11 text-[13px] font-normal text-ink">(이)라네..</span>
             </p>
           </div>
         </div>
       </div>
 
+      <div className="min-h-0 flex-1" />
+
       {/* ── 단상 7개 (위 4 / 아래 3) ── */}
-      <div className="mt-[7%] flex flex-none flex-col items-center">
+      <div className="flex flex-none flex-col items-center">
         <div className="flex w-full justify-center gap-[3%]">
           {slots.slice(0, 4).map((it, i) => <Pedestal key={i} item={it} />)}
         </div>
@@ -122,37 +127,44 @@ export default function WeeklyPage() {
         </div>
       </div>
 
-      <p className="mt-[3%] flex-none text-center font-galmuri11 text-[9px] text-black">
+      <p className="mt-[2%] flex-none text-center font-galmuri11 text-[9px] text-black">
         이번 주 아이템 {current.itemCount}개
         {current.bonusCount > 0 && ` · 보너스 +${current.bonusCount}`}
       </p>
 
-      {/* ── 평가 시작 버튼 — 에셋 나오면 <img>로 교체 ── */}
-      <div className="mt-[4%] flex flex-none flex-col items-center">
+      <div className="min-h-0 flex-[0.8]" />
+
+      {/* ── 평가 시작 버튼 ── */}
+      <div className="flex flex-none flex-col items-center">
         {current.claimed ? (
-          <div className="w-[70%] rounded-full border-2 border-border bg-surface-2 py-3 text-center font-galmuri9 text-[13px] font-bold text-ink-dim">
-            이번 주 평가 완료
+          <div className="w-[54%] opacity-60">
+            <img src="/assets/ui/TestComplete.png" alt="이번 주 평가 완료"
+                 className="block w-full select-none" draggable={false} />
           </div>
         ) : (
           <button
             onClick={handleStart}
             disabled={!current.claimable || busy}
-            className="w-[70%] rounded-full border-2 border-line bg-accent py-3 font-galmuri9 text-[16px] font-bold text-accent-2 shadow-[3px_3px_0_rgba(0,0,0,0.25)] disabled:border-border disabled:bg-surface-2 disabled:text-ink-dim disabled:shadow-none"
+            aria-label={busy ? '평가 중' : '평가 시작'}
+            className="btn-icon w-[54%] transition-opacity disabled:opacity-40"
           >
-            {busy ? '평가 중...' : '평가 시작!'}
+            <img src="/assets/ui/TestStart.png" alt="평가 시작"
+                 className="block w-full select-none" draggable={false} />
           </button>
         )}
 
         {!current.claimed && !current.isSunday && (
-          <p className="mt-2 text-center font-galmuri11 text-[9px] text-ink-dim">
+          <p className="mt-1.5 text-center font-galmuri11 text-[9px] text-ink-dim">
             평가는 일요일에 열려요
           </p>
         )}
       </div>
 
+      <div className="min-h-0 flex-[0.6]" />
+
       {/* ── 뒤로가기 ── */}
-      <div className="mt-auto flex flex-none items-center pt-[3%]">
-        <button onClick={() => navigate('/')} aria-label="홈으로" className="w-[13%]">
+      <div className="flex flex-none items-center">
+        <button onClick={() => navigate('/')} aria-label="홈으로" className="btn-icon w-[13%]">
           <img src="/assets/ui/Back.png" alt="" className="block w-full select-none" draggable={false} />
         </button>
       </div>
